@@ -181,7 +181,17 @@
   .linkbtn { background: none; border: 0; padding: 0; cursor: pointer; color: var(--ink); font-weight: 600; font-size: 13.5px; }
   .linkbtn:hover { text-decoration: underline; text-underline-offset: 2px; }
   .notice a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
-  .copy { margin-top: 28px; font-size: 11.5px; color: var(--muted); }
+  .copyrow { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 28px; }
+  .copy { margin: 0; font-size: 11.5px; color: var(--muted); }
+  /* przełącznik języka: sam tekst, aktywny język pogrubiony */
+  .lang { display: inline-flex; align-items: center; font-size: 12px; }
+  .lang button { background: none; border: 0; padding: 2px 6px; cursor: pointer; color: var(--muted); font-weight: 500; letter-spacing: .02em; transition: color .15s ease; }
+  .lang button + button { border-left: 1px solid var(--rule); }
+  .lang button:hover { color: var(--ink); }
+  .lang button[aria-pressed="true"] { color: var(--ink); font-weight: 700; }
+  header.top { position: relative; }
+  .lang-top { position: absolute; top: -4px; right: -6px; }
+  .lang-foot { display: none; }
   .notice { margin-top: 12px; padding: 10px 12px; border-left: 3px solid var(--live); background: var(--live-bg); color: var(--ink); border-radius: 0 4px 4px 0; }
   .notice p { margin: 0 0 4px; }
   .notice ol { margin: 4px 0 0; padding-left: 20px; }
@@ -220,6 +230,8 @@
     .row .info .el b { color: var(--ink); }
     .det-in { padding: 4px 10px 14px; }
     .det-grid { grid-template-columns: 1fr; }
+    .lang-top { display: none; }
+    .lang-foot { display: inline-flex; margin-right: -6px; }
     .det-grid figure.plot { order: -1; }
     svg.polar { max-width: none; width: calc(100% - 16px); margin: 6px auto 0; }
     svg.polar text { font-size: 9.5px; }
@@ -236,39 +248,40 @@
 <div class="wrap">
 
 <header class="top">
+  <div class="lang lang-top" role="group" data-i18n-aria="langGroup"><button data-lang="pl" lang="pl">PL</button><button data-lang="en" lang="en">EN</button></div>
   <div>
     <h1>SAT Predictor</h1>
-    <p class="where">Grid: <button class="loc mono" id="loc" title="Zmień lokator"></button></p>
+    <p class="where">Grid: <button class="loc mono" id="loc" data-i18n-title="gridTitle"></button></p>
   </div>
   <div class="controls">
-    <div class="seg" role="group" aria-label="Rodzaj emisji">
+    <div class="seg" role="group" data-i18n-aria="modes">
       <button class="flt" data-m="FM" aria-pressed="true">FM</button><button class="flt" data-m="SSB" aria-pressed="true">SSB</button><button class="flt" data-m="DIG" aria-pressed="true">DIG</button>
     </div>
-    <span id="compasswrap" class="tog" hidden><label for="compass">Kompas:</label><button class="switch" id="compass" role="switch" aria-checked="false" aria-label="Kompas telefonu"></button></span>
+    <span id="compasswrap" class="tog" hidden><label for="compass" data-i18n="compass">Kompas:</label><button class="switch" id="compass" role="switch" aria-checked="false" data-i18n-aria="compassAria"></button></span>
   </div>
 </header>
 
-<main class="list" id="list"><p class="empty">Liczę przeloty…</p></main>
+<main class="list" id="list"><p class="empty" data-i18n="computing">Liczę przeloty…</p></main>
 
 <footer class="data">
   <div id="tleinfo"></div>
   <div class="actions">
-    <button id="reload">Odśwież dane TLE</button>
-    <a id="dltle" href="https://www.amsat.org/tle/current/nasabare.txt" download="nasabare.txt" target="_blank" rel="noopener" title="Jeśli plik otworzy się w karcie: Ctrl+S (Cmd+S) albo prawy przycisk na linku → Zapisz link jako…">Pobierz plik TLE</a>
-    <label class="btn" for="tlefile2" tabindex="0">Wczytaj plik TLE</label><input type="file" id="tlefile2" multiple accept=".txt,.tle,text/plain" hidden>
+    <button id="reload" data-i18n="reload">Odśwież dane TLE</button>
+    <a id="dltle" href="https://www.amsat.org/tle/current/nasabare.txt" download="nasabare.txt" target="_blank" rel="noopener" data-i18n-title="downloadTitle" data-i18n="download">Pobierz plik TLE</a>
+    <label class="btn" for="tlefile2" tabindex="0" data-i18n="load">Wczytaj plik TLE</label><input type="file" id="tlefile2" multiple accept=".txt,.tle,text/plain" hidden>
   </div>
   <div id="tlefail" class="notice" hidden>
-    <p>Nie udało się pobrać danych orbitalnych automatycznie.</p>
+    <p data-i18n="failHead">Nie udało się pobrać danych orbitalnych automatycznie.</p>
     <ol>
-      <li>Pobierz plik z <a href="https://celestrak.org/NORAD/elements/gp.php?GROUP=amateur&FORMAT=tle" target="_blank" rel="noopener">CelesTrak</a> lub <a href="https://www.amsat.org/tle/current/nasabare.txt" target="_blank" rel="noopener">AMSAT</a> i zapisz go jako .txt.</li>
-      <li>Wczytaj go tutaj (możesz zaznaczyć kilka plików): <input type="file" id="tlefile" multiple accept=".txt,.tle,text/plain"></li>
+      <li data-i18n-html="failStep1"></li>
+      <li><span data-i18n="failStep2">Wczytaj go tutaj (możesz zaznaczyć kilka plików):</span> <input type="file" id="tlefile" multiple accept=".txt,.tle,text/plain"></li>
     </ol>
   </div>
   <div class="satbox">
     <button class="linkbtn" id="satlist-toggle" aria-expanded="false" aria-controls="satreveal"></button>
     <div class="reveal" id="satreveal"><div><div id="satlist"></div></div></div>
   </div>
-  <p class="copy">© SAT Predictor by SQ5WBW</p>
+  <div class="copyrow"><p class="copy">© SAT Predictor by SQ5WBW</p><div class="lang lang-foot" role="group" data-i18n-aria="langGroup"><button data-lang="pl" lang="pl">PL</button><button data-lang="en" lang="en">EN</button></div></div>
 </footer>
 
 </div>
@@ -495,6 +508,97 @@ function buildPass(sat, satrec, start, end) {
 }
 
 
+// ---------- tłumaczenia (PL / EN) ----------
+const I18N = {
+  pl: {
+    gridTitle: 'Zmień lokator', modes: 'Rodzaj emisji', compass: 'Kompas:', compassAria: 'Kompas telefonu',
+    computing: 'Liczę przeloty…', reload: 'Odśwież dane TLE', download: 'Pobierz plik TLE', load: 'Wczytaj plik TLE',
+    downloadTitle: 'Jeśli plik otworzy się w karcie: Ctrl+S (Cmd+S) albo prawy przycisk na linku → Zapisz link jako…',
+    failHead: 'Nie udało się pobrać danych orbitalnych automatycznie.',
+    failStep1: 'Pobierz plik z <a href="https://celestrak.org/NORAD/elements/gp.php?GROUP=amateur&FORMAT=tle" target="_blank" rel="noopener">CelesTrak</a> lub <a href="https://www.amsat.org/tle/current/nasabare.txt" target="_blank" rel="noopener">AMSAT</a> i zapisz go jako .txt.',
+    failStep2: 'Wczytaj go tutaj (możesz zaznaczyć kilka plików):',
+    colMode: 'Tryb', colSat: 'Satelita', colRise: 'Wschód', colDur: 'Czas', colEta: 'Do wschodu', colMax: 'Maks.', colAz: 'Azymut',
+    now: 'TERAZ!', in: 'za', min: 'min', h: 'h', upNow: 'Satelita jest nad horyzontem', toRise: 'Do wschodu', maxEl: 'Maksymalna elewacja',
+    azPath: 'Azymut: wschód → szczyt → zachód', rise: 'Wschód', peak: 'Szczyt', set: 'Zachód',
+    down: 'Downlink', up: 'Uplink', beacon: 'Beacon', type: 'Rodzaj', note: 'Uwagi', age: 'wiek danych', n2yo: 'Sprawdź na N2YO',
+    plotAria: n => `Wykres przelotu ${n} na niebie`,
+    plotTipCompass: 'Przeciągnij, aby poprawić kalibrację kompasu. Dwuklik przywraca domyślną korektę.',
+    plotTip: 'Przeciągnij, aby obrócić kompas. Dwuklik ustawia północ u góry.',
+    waitCompass: 'Czekam na odczyt kompasu…', corr: 'Korekta', rot: 'Obrót', los: 'LOS za', aos: 'AOS za',
+    noTLE: 'Brak danych orbitalnych. Odśwież dane TLE albo wczytaj plik TLE na dole strony.',
+    noPasses: 'Żaden satelita z wybranych rodzajów emisji nie przelatuje w najbliższej dobie. Włącz inne filtry u góry.',
+    tleFrom: 'Dane orbitalne z', tleNone: 'Brak danych orbitalnych.', tleLoading: 'Pobieram dane orbitalne…',
+    missing: 'Brak w aktualnych danych TLE', satlist: 'Satelity w bazie',
+    askGrid: 'Podaj swój lokator (4 lub 6 znaków, np. JO82 albo JO82LK):',
+    badGrid: 'To nie jest poprawny lokator. Wpisz 4 lub 6 znaków, np. KO02 albo KO02MF.',
+    badFile: 'W tym pliku nie ma danych TLE. Wybierz plik nasabare.txt z AMSAT albo plik z CelesTrak.',
+    needHttps: 'Kompas telefonu działa tylko na stronie otwartej przez https (nie z pliku na dysku).',
+    noPerm: 'Brak zgody na dostęp do kompasu.', compassFail: 'Nie udało się włączyć kompasu.',
+    noData: 'Telefon nie przesyła danych z kompasu. Sprawdź uprawnienia przeglądarki do czujników ruchu.',
+    langGroup: 'Język', locale: 'pl-PL',
+  },
+  en: {
+    gridTitle: 'Change grid locator', modes: 'Mode', compass: 'Compass:', compassAria: 'Phone compass',
+    computing: 'Calculating passes…', reload: 'Refresh TLE data', download: 'Download TLE file', load: 'Load TLE file',
+    downloadTitle: 'If the file opens in a tab: Ctrl+S (Cmd+S), or right-click the link → Save link as…',
+    failHead: 'Could not download orbital data automatically.',
+    failStep1: 'Download the file from <a href="https://celestrak.org/NORAD/elements/gp.php?GROUP=amateur&FORMAT=tle" target="_blank" rel="noopener">CelesTrak</a> or <a href="https://www.amsat.org/tle/current/nasabare.txt" target="_blank" rel="noopener">AMSAT</a> and save it as .txt.',
+    failStep2: 'Load it here (you can select several files):',
+    colMode: 'Mode', colSat: 'Satellite', colRise: 'AOS', colDur: 'Duration', colEta: 'Starts in', colMax: 'Max', colAz: 'Azimuth',
+    now: 'NOW!', in: 'in', min: 'min', h: 'h', upNow: 'The satellite is above the horizon', toRise: 'Time to AOS', maxEl: 'Maximum elevation',
+    azPath: 'Azimuth: AOS → max → LOS', rise: 'AOS', peak: 'Max', set: 'LOS',
+    down: 'Downlink', up: 'Uplink', beacon: 'Beacon', type: 'Type', note: 'Notes', age: 'data age', n2yo: 'View on N2YO',
+    plotAria: n => `Sky plot of the ${n} pass`,
+    plotTipCompass: 'Drag to fine-tune the compass calibration. Double-click restores the default correction.',
+    plotTip: 'Drag to rotate the compass. Double-click puts north back on top.',
+    waitCompass: 'Waiting for compass reading…', corr: 'Correction', rot: 'Rotation', los: 'LOS in', aos: 'AOS in',
+    noTLE: 'No orbital data. Refresh the TLE data or load a TLE file at the bottom of the page.',
+    noPasses: 'None of the selected modes has a pass in the next 24 hours. Turn on other filters at the top.',
+    tleFrom: 'Orbital data from', tleNone: 'No orbital data.', tleLoading: 'Downloading orbital data…',
+    missing: 'Not in the current TLE data', satlist: 'Satellites in the database',
+    askGrid: 'Enter your grid locator (4 or 6 characters, e.g. JO82 or JO82LK):',
+    badGrid: 'That is not a valid grid locator. Enter 4 or 6 characters, e.g. KO02 or KO02MF.',
+    badFile: 'This file contains no TLE data. Choose nasabare.txt from AMSAT or a file from CelesTrak.',
+    needHttps: 'The phone compass only works on a page opened over https (not from a file on disk).',
+    noPerm: 'Compass access was not allowed.', compassFail: 'Could not turn on the compass.',
+    noData: 'The phone is not sending compass data. Check the browser’s motion sensor permissions.',
+    langGroup: 'Language', locale: 'en-GB',
+  },
+};
+// uwagi i opisy z listy satelitów po angielsku
+const DATA_EN = {
+  'Nie używaj, gdy satelita jest w cieniu Ziemi (słaba bateria).': 'Do not use while the satellite is in eclipse (weak battery).',
+  'Orbita przy równiku (±30°) – z Polski niewidoczny. Pracuje według harmonogramu.': 'Near-equatorial orbit (±30°), not visible from Poland. Operates on a schedule.',
+  'Transponder FM bez stałego harmonogramu.': 'FM transponder without a fixed schedule.',
+  'Transponder według harmonogramu; satelita prawdopodobnie kończy pracę.': 'Transponder on a schedule; the satellite is probably nearing end of life.',
+  'Włączany w czasie testów.': 'Switched on during tests.',
+  'Najpierw uzbrój timer: 2 s nośnej z tonem 74.4 Hz.': 'Arm the timer first: 2 s of carrier with a 74.4 Hz tone.',
+  'Transpondery TEVEL2 działają zawodnie (restarty).': 'TEVEL2 transponders are unreliable (resets).',
+  'Działa tylko w słońcu; tryby A i B przełączają się same.': 'Works only in sunlight; modes A and B switch automatically.',
+  'Pasmo 200 kHz; aktywacja na wniosek, według harmonogramu.': '200 kHz passband; activated on request, on a schedule.',
+  'Transponder włączany według harmonogramu.': 'Transponder switched on according to a schedule.',
+  'Status nieznany – właściciel zgłasza problemy z nadawaniem.': 'Status unknown; the operator reports transmitter problems.',
+  'Transponder przerywa (ok. 2 s pracy, 5 s przerwy).': 'Transponder cycles (about 2 s on, 5 s off).',
+  'W trakcie uruchamiania.': 'Being commissioned.',
+  'W trakcie testów.': 'In testing.',
+  'Transponder FM (145.925/435.615) nie działa, nadaje tylko beacon.': 'FM transponder (145.925/435.615) is not working; only the beacon transmits.',
+  'Satelita z 1984 r., telemetria słyszana sporadycznie.': 'Launched in 1984; telemetry heard occasionally.',
+  'SSTV, muzyka': 'SSTV, music', '437.200 (telemetria)': '437.200 (telemetry)',
+  '- (telemetria nie działa)': '- (telemetry not working)', '437.125 CW (nośna)': '437.125 CW (carrier)',
+};
+let lang = 'pl';
+const T = k => I18N[lang][k];
+const TD = s => (lang === 'en' && DATA_EN[s]) || s;
+
+function applyLang() {
+  document.documentElement.lang = lang;
+  for (const el of document.querySelectorAll('[data-i18n]')) el.textContent = T(el.dataset.i18n);
+  for (const el of document.querySelectorAll('[data-i18n-html]')) el.innerHTML = T(el.dataset.i18nHtml);
+  for (const el of document.querySelectorAll('[data-i18n-title]')) el.title = T(el.dataset.i18nTitle);
+  for (const el of document.querySelectorAll('[data-i18n-aria]')) el.setAttribute('aria-label', T(el.dataset.i18nAria));
+  for (const b of document.querySelectorAll('.lang button')) b.setAttribute('aria-pressed', String(b.dataset.lang === lang));
+}
+
 // ---------- stan i rysowanie ----------
 let filter = { FM: true, SSB: true, DIG: true };
 let locator = DEFAULT_LOCATOR;
@@ -511,7 +615,7 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;',
 
 function countdown(ms) {
   const m = Math.max(0, Math.floor(ms / 60000));
-  return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${pad2(m % 60)} min`;
+  return m < 60 ? `${m} ${T('min')}` : `${Math.floor(m / 60)} ${T('h')} ${pad2(m % 60)} ${T('min')}`;
 }
 function etaShort(ms) {
   const m = Math.max(0, Math.floor(ms / 60000));
@@ -524,11 +628,11 @@ function rowHTML(p, now) {
   return `<span class="mode">${esc(p.sat.mode)}</span>` +
     `<span class="name">${esc(p.sat.name)}<span class="livepos num" data-sat="${esc(p.sat.name)}" data-start="${p.start}" data-end="${p.end}"></span></span>` +
     `<span class="info">` +
-      `<span class="start num" title="Wschód">${hhmm(p.start)}</span>` +
-      `<span class="dur num r">${dur} min</span>` +
-      `<span class="eta num r${on ? ' on' : ''}" title="${on ? 'Satelita jest nad horyzontem' : 'Do wschodu'}">${on ? 'teraz' : 'za ' + etaShort(p.start - now)}</span>` +
-      `<span class="el num r" title="Maksymalna elewacja"><b>${p.elMax}°</b></span>` +
-      `<span class="az num r" title="Azymut: wschód → szczyt → zachód">${p.azRise}° → ${p.azPeak}° → ${p.azSet}°</span>` +
+      `<span class="start num" title="${T('rise')}">${hhmm(p.start)}</span>` +
+      `<span class="dur num r">${dur} ${T('min')}</span>` +
+      `<span class="eta num r${on ? ' on' : ''}" title="${on ? T('upNow') : T('toRise')}">${on ? T('now') : T('in') + ' ' + etaShort(p.start - now)}</span>` +
+      `<span class="el num r" title="${T('maxEl')}"><b>${p.elMax}°</b></span>` +
+      `<span class="az num r" title="${T('azPath')}">${p.azRise}° → ${p.azPeak}° → ${p.azSet}°</span>` +
     `</span>`;
 }
 
@@ -545,16 +649,16 @@ function detailsHTML(p) {
   const row = (k, v, cls) => `<dt>${k}</dt><dd class="${cls || ''}">${esc(v)}</dd>`;
   return `<div class="det-grid"><div>` +
     `<div class="times">` +
-      `<div><span>Wschód</span><strong class="num">${hhmm(p.start)}</strong><em class="num">az ${p.azRise}°</em></div>` +
-      `<div><span>Szczyt</span><strong class="num">${hhmm(p.peak)}</strong><em class="num">el ${p.elMax}°</em></div>` +
-      `<div><span>Zachód</span><strong class="num">${hhmm(p.end)}</strong><em class="num">az ${p.azSet}°</em></div>` +
+      `<div><span>${T('rise')}</span><strong class="num">${hhmm(p.start)}</strong><em class="num">az ${p.azRise}°</em></div>` +
+      `<div><span>${T('peak')}</span><strong class="num">${hhmm(p.peak)}</strong><em class="num">el ${p.elMax}°</em></div>` +
+      `<div><span>${T('set')}</span><strong class="num">${hhmm(p.end)}</strong><em class="num">az ${p.azSet}°</em></div>` +
     `</div>` +
     `<dl class="freq">` +
-      row('Downlink', s.down, 'num') + row('Uplink', s.up, 'num') + row('Beacon', s.beacon, 'num') +
-      row('Rodzaj', s.type || s.mode) + (s.note ? row('Uwagi', s.note, 'note') : '') +
+      row(T('down'), TD(s.down), 'num') + row(T('up'), TD(s.up), 'num') + row(T('beacon'), TD(s.beacon), 'num') +
+      row(T('type'), TD(s.type || s.mode)) + (s.note ? row(T('note'), TD(s.note), 'note') : '') +
     `</dl>` +
     `</div><figure class="plot">${polarSVG(p)}<figcaption class="plotcap">${esc(rotLabel())}</figcaption></figure></div>` +
-    `<div class="tle">TLE: ${esc(r ? r.tleName || '-' : '-')}, <a href="https://www.n2yo.com/satellite/?s=${s.norad}#results" target="_blank" rel="noopener" title="Sprawdź na N2YO">NORAD ${s.norad}</a>, wiek danych ${age} d</div>`;
+    `<div class="tle">TLE: ${esc(r ? r.tleName || '-' : '-')}, <a href="https://www.n2yo.com/satellite/?s=${s.norad}#results" target="_blank" rel="noopener" title="${T('n2yo')}">NORAD ${s.norad}</a>, ${T('age')} ${age} d</div>`;
 }
 
 // ---------- wykres biegunowy przelotu ----------
@@ -581,13 +685,13 @@ const isNarrow = () => matchMedia('(max-width: 720px)').matches;
 const plotBox = () => isNarrow() ? { x: 4, y: 0, w: 232, h: 250 } : { x: -40, y: 0, w: 320, h: 240 };
 function polarSVG(p) {
   const v = plotBox();
-  return `<svg class="polar" viewBox="${v.x} ${v.y} ${v.w} ${v.h}" role="img" aria-label="Wykres przelotu ${esc(p.sat.name)} na niebie" data-sat="${esc(p.sat.name)}" data-start="${p.start}" data-end="${p.end}">` +
+  return `<svg class="polar" viewBox="${v.x} ${v.y} ${v.w} ${v.h}" role="img" aria-label="${esc(T('plotAria')(p.sat.name))}" data-sat="${esc(p.sat.name)}" data-start="${p.start}" data-end="${p.end}">` +
          polarInner(p) + `</svg>`;
 }
 function polarInner(p) {
   const pts = passTrack(p);
   const f = n => n.toFixed(1);
-  let s = `<title>${compassOn ? 'Przeciągnij, aby poprawić kalibrację kompasu. Dwuklik przywraca domyślną korektę.' : 'Przeciągnij, aby obrócić kompas. Dwuklik ustawia północ u góry.'}</title>`;
+  let s = `<title>${compassOn ? T('plotTipCompass') : T('plotTip')}</title>`;
   s += `<circle cx="${PC}" cy="${PC}" r="${PR + 20}" fill="transparent"/>`;
   s += `<circle class="disc" cx="${PC}" cy="${PC}" r="${PR}"/>`;
   for (const el of [30, 60]) s += `<circle class="grid" cx="${PC}" cy="${PC}" r="${f(PR * (90 - el) / 90)}"/>`;
@@ -642,11 +746,11 @@ function applyRot() {
 }
 function rotLabel() {
   if (compassOn) {
-    if (heading === null) return 'Czekam na odczyt kompasu…';
+    if (heading === null) return T('waitCompass');
     const c = Math.round(compassCorr);
-    return `Korekta: ${c > 0 ? '+' : c < 0 ? '−' : ''}${Math.abs(c)}°`;
+    return `${T('corr')}: ${c > 0 ? '+' : c < 0 ? '−' : ''}${Math.abs(c)}°`;
   }
-  return manualRot ? `Obrót: ${Math.round(norm(manualRot))}°` : '';
+  return manualRot ? `${T('rot')}: ${Math.round(norm(manualRot))}°` : '';
 }
 
 function setupPlotRotation() {
@@ -743,19 +847,19 @@ function setupCompass() {
   btn.addEventListener('click', async () => {
     if (compassOn) { compassOn = false; heading = null; stop(); setBtn(); applyRot(); return; }
     if (!window.isSecureContext) {
-      alert('Kompas telefonu działa tylko na stronie otwartej przez https (nie z pliku na dysku).');
+      alert(T('needHttps'));
       return;
     }
     if (typeof DeviceOrientationEvent.requestPermission === 'function') {   // iPhone / iPad
       try {
         const r = await DeviceOrientationEvent.requestPermission();
-        if (r !== 'granted') { alert('Brak zgody na dostęp do kompasu.'); return; }
-      } catch (err) { alert('Nie udało się włączyć kompasu.'); return; }
+        if (r !== 'granted') { alert(T('noPerm')); return; }
+      } catch (err) { alert(T('compassFail')); return; }
     }
     compassOn = true; heading = null; sx = sy = 0;
     start(); setBtn(); applyRot();
     setTimeout(() => {
-      if (compassOn && heading === null) alert('Telefon nie przesyła danych z kompasu. Sprawdź uprawnienia przeglądarki do czujników ruchu.');
+      if (compassOn && heading === null) alert(T('noData'));
     }, 3000);
   });
 }
@@ -781,14 +885,14 @@ function updatePlots() {
       g.removeAttribute('hidden');
       azel.textContent = `AZ ${Math.round(la.az)}°  EL ${Math.round(la.el)}°`;
       const sec = Math.max(0, Math.round((end - now) / 1000));
-      los.textContent = `LOS za ${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
+      los.textContent = `${T('los')} ${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
     } else {
       g.setAttribute('hidden', '');
       azel.textContent = '';
       if (now < start) {
         const sec = Math.round((start - now) / 1000);
         const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s2 = sec % 60;
-        los.textContent = `AOS za ${h ? h + ':' : ''}${String(m).padStart(2, '0')}:${String(s2).padStart(2, '0')}`;
+        los.textContent = `${T('aos')} ${h ? h + ':' : ''}${String(m).padStart(2, '0')}:${String(s2).padStart(2, '0')}`;
       } else los.textContent = '';
     }
   }
@@ -802,12 +906,12 @@ function draw() {
   passes = passes.filter(p => p.end > now);
   const list = $('list');
   if (!satrecs.length) {
-    list.innerHTML = '<p class="empty">Brak danych orbitalnych. Odśwież dane TLE albo wczytaj plik TLE na dole strony.</p>';
+    list.innerHTML = `<p class="empty">${T('noTLE')}</p>`;
     return;
   }
   const shown = passes.filter(p => filter[p.sat.mode] !== false);
   if (!shown.length) {
-    list.innerHTML = '<p class="empty">Żaden satelita z wybranych rodzajów emisji nie przelatuje w najbliższej dobie. Włącz inne filtry u góry.</p>';
+    list.innerHTML = `<p class="empty">${T('noPasses')}</p>`;
     return;
   }
   const activeCount = shown.filter(p => now >= p.start).length || 1;
@@ -815,7 +919,7 @@ function draw() {
   const frag = document.createDocumentFragment();
   const head = document.createElement('div');
   head.className = 'cols'; head.setAttribute('aria-hidden', 'true');
-  head.innerHTML = '<span>Tryb</span><span>Satelita</span><span>Wschód</span><span class="r">Czas</span><span class="r">Do wschodu</span><span class="r">Maks.</span><span class="r">Azymut</span>';
+  head.innerHTML = `<span>${T('colMode')}</span><span>${T('colSat')}</span><span>${T('colRise')}</span><span class="r">${T('colDur')}</span><span class="r">${T('colEta')}</span><span class="r">${T('colMax')}</span><span class="r">${T('colAz')}</span>`;
   frag.appendChild(head);
   for (const p of shown) {
     const id = `${p.sat.name}_${p.start}`;
@@ -902,12 +1006,12 @@ function calculate() {
   lastCalc = now;
 
   const tt = +store.get('tle_time');
-  $('tleinfo').textContent = tt ? `Dane orbitalne z ${new Date(tt).toLocaleString('pl-PL', { dateStyle: 'medium', timeStyle: 'short' })}` : 'Brak danych orbitalnych.';
+  $('tleinfo').textContent = tt ? `${T('tleFrom')} ${new Date(tt).toLocaleString(T('locale'), { dateStyle: 'medium', timeStyle: 'short' })}` : T('tleNone');
   const haveTLE = Object.keys(tleDB).length > 0;
   $('satlist').innerHTML = SATS.map(s => {
     const miss = haveTLE && missing.includes(s.name);
     return `<a href="https://www.n2yo.com/satellite/?s=${s.norad}#results" target="_blank" rel="noopener"` +
-           (miss ? ` class="missing" title="Brak w aktualnych danych TLE"` : ` title="NORAD ${s.norad}"`) + `>${esc(s.name)}</a>`;
+           (miss ? ` class="missing" title="${T('missing')}"` : ` title="NORAD ${s.norad}"`) + `>${esc(s.name)}</a>`;
   }).join('');
   setSatlistToggle();
   draw();
@@ -916,7 +1020,7 @@ function calculate() {
 function setSatlistToggle() {
   const open = $('satreveal').classList.contains('open');
   const b = $('satlist-toggle');
-  b.textContent = `${open ? '▾' : '▸'} Satelity w bazie (${SATS.length})`;
+  b.textContent = `${open ? '▾' : '▸'} ${T('satlist')} (${SATS.length})`;
   b.setAttribute('aria-expanded', String(open));
 }
 
@@ -930,7 +1034,7 @@ async function loadTLE(force) {
   const age = Date.now() - (+store.get('tle_time') || 0);
   let text = (!force && cached && age < TLE_MAX_AGE) ? cached : null;
   if (!text) {
-    $('tleinfo').textContent = 'Pobieram dane orbitalne…';
+    $('tleinfo').textContent = T('tleLoading');
     try { text = await fetchTLE(); $('tlefail').hidden = true; }
     catch (e) {
       text = cached;   // użyj starych danych, jeśli są
@@ -943,6 +1047,18 @@ async function loadTLE(force) {
 
 // ---------- start ----------
 (function init() {
+  const savedLang = store.get('lang');
+  lang = savedLang === 'pl' || savedLang === 'en' ? savedLang : ((navigator.language || 'pl').toLowerCase().startsWith('pl') ? 'pl' : 'en');
+  applyLang();
+  for (const b of document.querySelectorAll('.lang button')) {
+    b.addEventListener('click', () => {
+      if (lang === b.dataset.lang) return;
+      lang = b.dataset.lang;
+      store.set('lang', lang);
+      applyLang();
+      calculate();
+    });
+  }
   const fromHash = decodeURIComponent(location.hash.slice(1));
   const saved = store.get('locator');
   locator = gridToLatLon(fromHash) ? fromHash.toUpperCase() : (saved && gridToLatLon(saved) ? saved : DEFAULT_LOCATOR);
@@ -950,14 +1066,14 @@ async function loadTLE(force) {
   setLocatorUI();
 
   $('loc').addEventListener('click', () => {
-    const v = prompt('Podaj swój lokator (4 lub 6 znaków, np. JO82 albo JO82LK):', locator);
+    const v = prompt(T('askGrid'), locator);
     if (v && gridToLatLon(v.trim())) {
       locator = v.trim().toUpperCase();
       store.set('locator', locator);
       history.replaceState(null, '', '#' + locator);
       setLocatorUI();
       calculate();
-    } else if (v) alert('To nie jest poprawny lokator. Wpisz 4 lub 6 znaków, np. KO02 albo KO02MF.');
+    } else if (v) alert(T('badGrid'));
   });
   for (const b of document.querySelectorAll('.flt')) {
     b.addEventListener('click', () => {
@@ -998,7 +1114,7 @@ async function loadTLE(force) {
     const files = [...e.target.files];
     if (!files.length) return;
     const text = (await Promise.all(files.map(f => f.text()))).join('\n');
-    if (!Object.keys(parseTLE(text)).length) { alert('W tym pliku nie ma danych TLE. Wybierz plik nasabare.txt z AMSAT albo plik z CelesTrak.'); return; }
+    if (!Object.keys(parseTLE(text)).length) { alert(T('badFile')); return; }
     const merged = (store.get('tle_text') || '') + '\n' + text;
     store.set('tle_text', merged);
     store.set('tle_time', String(Date.now()));
