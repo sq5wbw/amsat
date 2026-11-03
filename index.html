@@ -72,8 +72,13 @@
   .seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
   .seg button:hover:not([aria-pressed="true"]) { color: var(--ink); }
   .tog { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
-  .switch { border: 1px solid var(--rule); background: var(--surface); border-radius: 999px; padding: 5px 14px; cursor: pointer; font-weight: 600; font-size: 13px; }
-  .switch[aria-pressed="true"] { background: var(--live); border-color: var(--live); color: #fff; }
+  .tog label { cursor: pointer; }
+  /* przełącznik: stały rozmiar, gałka przesuwa się w prawo po włączeniu */
+  .switch { position: relative; width: 44px; height: 26px; flex: none; padding: 0; border: 1px solid var(--rule); border-radius: 999px; background: var(--rule); cursor: pointer; transition: background-color .2s ease, border-color .2s ease; }
+  .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 2px rgba(0, 0, 0, .25); transition: transform .2s cubic-bezier(.2, .7, .2, 1); }
+  .switch[aria-checked="true"] { background: var(--live); border-color: var(--live); }
+  .switch[aria-checked="true"]::after { transform: translateX(18px); }
+  @media (prefers-reduced-motion: reduce) { .switch, .switch::after { transition: none; } }
 
   /* ---------- lista przelotów ---------- */
   .list { margin-top: 18px; }
@@ -223,7 +228,7 @@
     <div class="seg" role="group" aria-label="Rodzaj emisji">
       <button class="flt" data-m="FM" aria-pressed="true">FM</button><button class="flt" data-m="SSB" aria-pressed="true">SSB</button><button class="flt" data-m="DIG" aria-pressed="true">DIG</button>
     </div>
-    <span id="compasswrap" class="tog" hidden>Kompas: <button class="switch" id="compass" aria-pressed="false" aria-label="Kompas telefonu">Wył.</button></span>
+    <span id="compasswrap" class="tog" hidden><label for="compass">Kompas</label><button class="switch" id="compass" role="switch" aria-checked="false" aria-label="Kompas telefonu"></button></span>
   </div>
 </header>
 
@@ -686,7 +691,7 @@ function setupCompass() {
   const isPhone = window.matchMedia && matchMedia('(pointer: coarse)').matches;
   if (!('DeviceOrientationEvent' in window) || !isPhone) return;     // na komputerze bez zmian
   wrap.hidden = false;
-  const setBtn = () => { btn.textContent = compassOn ? 'Wł.' : 'Wył.'; btn.setAttribute('aria-pressed', String(compassOn)); };
+  const setBtn = () => { btn.setAttribute('aria-checked', String(compassOn)); };
   setBtn();
 
   let sx = 0, sy = 0, lastDraw = 0, raf = 0;
