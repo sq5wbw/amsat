@@ -182,6 +182,8 @@
     .wrap { padding: 18px 10px 40px; }
     h1 { font-size: 22px; }
     header.top { align-items: flex-start; border-bottom: 1px solid var(--rule); }
+    .controls { width: 100%; }
+    #compasswrap { margin-left: auto; }
     .cols { display: none; }
     .row {
       grid-template-columns: auto 1fr auto;
@@ -221,7 +223,7 @@
     <div class="seg" role="group" aria-label="Rodzaj emisji">
       <button class="flt" data-m="FM" aria-pressed="true">FM</button><button class="flt" data-m="SSB" aria-pressed="true">SSB</button><button class="flt" data-m="DIG" aria-pressed="true">DIG</button>
     </div>
-    <span id="compasswrap" hidden><button class="switch" id="compass" aria-pressed="false">Kompas: Wył.</button></span>
+    <span id="compasswrap" class="tog" hidden>Kompas: <button class="switch" id="compass" aria-pressed="false" aria-label="Kompas telefonu">Wył.</button></span>
   </div>
 </header>
 
@@ -684,7 +686,7 @@ function setupCompass() {
   const isPhone = window.matchMedia && matchMedia('(pointer: coarse)').matches;
   if (!('DeviceOrientationEvent' in window) || !isPhone) return;     // na komputerze bez zmian
   wrap.hidden = false;
-  const setBtn = () => { btn.textContent = compassOn ? 'Kompas: Wł.' : 'Kompas: Wył.'; btn.setAttribute('aria-pressed', String(compassOn)); };
+  const setBtn = () => { btn.textContent = compassOn ? 'Wł.' : 'Wył.'; btn.setAttribute('aria-pressed', String(compassOn)); };
   setBtn();
 
   let sx = 0, sy = 0, lastDraw = 0, raf = 0;
