@@ -151,6 +151,8 @@
   svg.polar.dragging { cursor: grabbing; }
   svg.polar text { font-family: var(--sans); font-variation-settings: "MONO" 1; font-size: 10px; fill: var(--muted); }
   svg.polar .disc { fill: var(--paper); }
+  /* grubość linii w pikselach ekranu, niezależnie od rozmiaru wykresu (telefon = komputer) */
+  svg.polar .grid, svg.polar .horizon, svg.polar .track, svg.polar .tick, svg.polar .halo { vector-effect: non-scaling-stroke; }
   svg.polar .grid { fill: none; stroke: var(--rule); stroke-width: 1; }
   svg.polar .horizon { fill: none; stroke: var(--muted); stroke-width: 1.2; }
   svg.polar .card { fill: var(--ink); font-size: 12px; font-weight: 700; font-variation-settings: "MONO" 0; }
