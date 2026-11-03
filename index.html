@@ -165,7 +165,7 @@
 
   /* ---------- telefon ---------- */
   @media (max-width: 720px) {
-    .wrap { padding: 18px 14px 40px; }
+    .wrap { padding: 18px 10px 40px; }
     h1 { font-size: 22px; }
     header.top { align-items: flex-start; border-bottom: 1px solid var(--rule); }
     .cols { display: none; }
@@ -182,9 +182,11 @@
     .row .start, .row .dur, .row .el, .row .az { grid-area: info; }
     .row .info { grid-area: info; display: flex; flex-wrap: wrap; gap: 2px 14px; color: var(--muted); font-size: 13.5px; }
     .row .info .el b { color: var(--ink); }
-    .det-in { padding: 4px 12px 14px; }
+    .det-in { padding: 4px 10px 14px; }
     .det-grid { grid-template-columns: 1fr; }
-    svg.polar { margin: 4px auto 0; max-width: 340px; }
+    svg.polar { max-width: none; width: calc(100% + 20px); margin: 6px -10px 0; }
+    svg.polar text { font-size: 9.5px; }
+    svg.polar .card { font-size: 12px; }
     .times { gap: 4px 22px; }
     .times div em { display: block; margin-left: 0; }
   }
@@ -536,8 +538,12 @@ function passTrack(p) {
   }
   return (p.track = pts);
 }
+// pole widoku wykresu: na komputerze z marginesem na podpisy, na telefonie ciaśniej, żeby tarcza była duża
+const isNarrow = () => matchMedia('(max-width: 720px)').matches;
+const plotBox = () => isNarrow() ? { x: 4, y: 0, w: 232, h: 250 } : { x: -40, y: 0, w: 320, h: 240 };
 function polarSVG(p) {
-  return `<svg class="polar" viewBox="-40 0 320 240" role="img" aria-label="Wykres przelotu ${esc(p.sat.name)} na niebie" data-sat="${esc(p.sat.name)}" data-start="${p.start}" data-end="${p.end}">` +
+  const v = plotBox();
+  return `<svg class="polar" viewBox="${v.x} ${v.y} ${v.w} ${v.h}" role="img" aria-label="Wykres przelotu ${esc(p.sat.name)} na niebie" data-sat="${esc(p.sat.name)}" data-start="${p.start}" data-end="${p.end}">` +
          polarInner(p) + `</svg>`;
 }
 function polarInner(p) {
@@ -574,9 +580,10 @@ function polarInner(p) {
     s += `<circle class="tick${cls}" cx="${f(x)}" cy="${f(y)}" r="3"/><text class="tlabel" x="${f(vl < 8 ? x + 7 : lx)}" y="${f(ly)}" text-anchor="${anchor}" dominant-baseline="${base}">${hhmm(tt)}</text>`;
   }
   s += `<g class="satpos" hidden><text class="satname" x="8" y="-7">${esc(p.sat.name)}</text><circle class="halo" r="8" style="animation-delay:-${Date.now() % 1800}ms"/><circle class="satdot" r="4"/></g>`;
-  s += `<text class="info" data-k="azel" x="-36" y="234"></text><text class="info" data-k="los" x="276" y="234" text-anchor="end"></text>`;
+  const v = plotBox(), L = v.x + 4, R = v.x + v.w - 4, B = v.y + v.h - 6;
+  s += `<text class="info" data-k="azel" x="${L}" y="${B}"></text><text class="info" data-k="los" x="${R}" y="${B}" text-anchor="end"></text>`;
   const rl = rotLabel();
-  if (rl) s += `<text class="info" x="276" y="10" text-anchor="end">${esc(rl)}</text>`;
+  if (rl) s += `<text class="info" x="${R}" y="10" text-anchor="end">${esc(rl)}</text>`;
   return s;
 }
 function redrawPlots() {
@@ -614,7 +621,8 @@ function setupPlotRotation() {
   let drag = null;
   const angleOf = (svg, e) => {
     const b = svg.getBoundingClientRect();
-    const cx = b.left + (PC + 40) / 320 * b.width, cy = b.top + PC / 240 * b.height;
+    const vb = svg.viewBox.baseVal;
+    const cx = b.left + (PC - vb.x) / vb.width * b.width, cy = b.top + (PC - vb.y) / vb.height * b.height;
     return Math.atan2(e.clientX - cx, cy - e.clientY) * 180 / Math.PI;
   };
   document.addEventListener('pointerdown', e => {
@@ -727,8 +735,12 @@ function updatePlots() {
     if (la && la.el >= 0) {
       const [x, y] = polarXY(la.az, la.el);
       g.setAttribute('transform', `translate(${x.toFixed(1)},${y.toFixed(1)})`);
-      g.querySelector('text').setAttribute('text-anchor', x > PC ? 'start' : 'end');   // nazwa na zewnątrz,
-      g.querySelector('text').setAttribute('x', x > PC ? '6' : '-6');                // podpisy czasu do środka
+      const nm = g.querySelector('text');
+      if (isNarrow()) {                       // telefon: nazwa nad kropką, wyśrodkowana
+        nm.setAttribute('text-anchor', 'middle'); nm.setAttribute('x', '0'); nm.setAttribute('y', '-11');
+      } else {                                // komputer: nazwa na zewnątrz, podpisy czasu do środka
+        nm.setAttribute('text-anchor', x > PC ? 'start' : 'end'); nm.setAttribute('x', x > PC ? '6' : '-6'); nm.setAttribute('y', '-7');
+      }
       g.removeAttribute('hidden');
       azel.textContent = `AZ ${Math.round(la.az)}°  EL ${Math.round(la.el)}°`;
       const sec = Math.max(0, Math.round((end - now) / 1000));
