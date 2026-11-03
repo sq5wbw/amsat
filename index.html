@@ -190,8 +190,12 @@
   @media (max-width: 720px) {
     .wrap { padding: 18px 10px 40px; }
     h1 { font-size: 22px; }
-    header.top { align-items: flex-start; border-bottom: 1px solid var(--rule); }
-    .controls { width: 100%; }
+    /* nagłówek w dwóch liniach: nazwa | grid, filtry | kompas */
+    header.top { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px 12px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
+    header.top > div:first-child { display: contents; }
+    header.top h1 { grid-column: 1; }
+    header.top .where { grid-column: 2; margin: 0; white-space: nowrap; }
+    .controls { grid-column: 1 / -1; width: 100%; }
     #compasswrap { margin-left: auto; }
     .cols { display: none; }
     .row {
