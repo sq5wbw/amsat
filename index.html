@@ -1048,7 +1048,7 @@ async function loadTLE(force) {
 // ---------- start ----------
 (function init() {
   const savedLang = store.get('lang');
-  lang = savedLang === 'pl' || savedLang === 'en' ? savedLang : ((navigator.language || 'pl').toLowerCase().startsWith('pl') ? 'pl' : 'en');
+  lang = savedLang === 'pl' || savedLang === 'en' ? savedLang : 'en';   // domyślnie EN; wybór użytkownika jest zapamiętywany
   applyLang();
   for (const b of document.querySelectorAll('.lang button')) {
     b.addEventListener('click', () => {
