@@ -142,6 +142,7 @@
   dl.freq dd { margin: 0; }
   dl.freq dd.note { color: var(--muted); }
   .tle { margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 12.5px; }
+  .tle a { color: var(--live); font-weight: 600; }
 
   /* ---------- wykres nieba ---------- */
   figure.plot { margin: 0; }
@@ -173,16 +174,22 @@
 
   /* ---------- stopka ---------- */
   footer.data { margin-top: 28px; color: var(--muted); font-size: 13.5px; }
-  .actions { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 6px; }
-  .actions button, .actions a, .actions label.btn, .linkbtn { background: none; border: 0; padding: 0; cursor: pointer; color: var(--track); font-weight: 600; font-size: 13.5px; }
-  .actions button:hover, .actions label.btn:hover, .linkbtn:hover { text-decoration: underline; text-underline-offset: 2px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  /* przyciski stopki w stylu pola „Grid” */
+  .actions button, .actions a, .actions label.btn { display: inline-block; border: 1px solid var(--rule); background: var(--surface); border-radius: 4px; padding: 4px 10px; cursor: pointer; color: var(--ink); font-weight: 600; font-size: 13px; line-height: 1.4; text-decoration: none; transition: border-color .15s ease; }
+  .actions button:hover, .actions a:hover, .actions label.btn:hover { border-color: var(--muted); text-decoration: none; }
+  .linkbtn { background: none; border: 0; padding: 0; cursor: pointer; color: var(--ink); font-weight: 600; font-size: 13.5px; }
+  .linkbtn:hover { text-decoration: underline; text-underline-offset: 2px; }
+  .notice a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+  .copy { margin-top: 28px; font-size: 11.5px; color: var(--muted); }
   .notice { margin-top: 12px; padding: 10px 12px; border-left: 3px solid var(--live); background: var(--live-bg); color: var(--ink); border-radius: 0 4px 4px 0; }
   .notice p { margin: 0 0 4px; }
   .notice ol { margin: 4px 0 0; padding-left: 20px; }
   .satbox { margin-top: 18px; }
   .satbox .linkbtn { color: var(--ink); }
   #satlist { margin-top: 8px; margin-bottom: 2px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; display: flex; flex-wrap: wrap; gap: 4px 14px; max-width: 80ch; }
-  #satlist a { white-space: nowrap; font-weight: 500; }
+  #satlist a { white-space: nowrap; font-weight: 500; color: var(--ink); }
+  #satlist a:hover { text-decoration: underline; text-underline-offset: 2px; }
   #satlist a.missing { color: var(--muted); }
   .empty { padding: 18px 12px; color: var(--muted); }
 
@@ -213,6 +220,7 @@
     .row .info .el b { color: var(--ink); }
     .det-in { padding: 4px 10px 14px; }
     .det-grid { grid-template-columns: 1fr; }
+    .det-grid figure.plot { order: -1; }
     svg.polar { max-width: none; width: calc(100% - 16px); margin: 6px auto 0; }
     svg.polar text { font-size: 9.5px; }
     svg.polar .card { font-size: 12px; }
@@ -260,6 +268,7 @@
     <button class="linkbtn" id="satlist-toggle" aria-expanded="false" aria-controls="satreveal"></button>
     <div class="reveal" id="satreveal"><div><div id="satlist"></div></div></div>
   </div>
+  <p class="copy">© SAT Predictor by SQ5WBW</p>
 </footer>
 
 </div>
