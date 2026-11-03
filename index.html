@@ -97,7 +97,23 @@
   .lbl { display: none; }
 
   /* ---------- szczegóły przelotu ---------- */
-  .det { background: var(--surface); border-bottom: 1px solid var(--rule); padding: 6px 12px 16px; }
+  /* rozwijanie: wysokość animowana przez grid 0fr → 1fr, treść lekko wjeżdża i się rozjaśnia */
+  .det { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .32s cubic-bezier(.2, .7, .2, 1); }
+  .det.open { grid-template-rows: 1fr; }
+  .det-clip { overflow: hidden; min-height: 0; }
+  .det-in { background: var(--surface); border-bottom: 1px solid var(--rule); padding: 6px 12px 16px;
+            opacity: 0; transform: translateY(-6px); transition: opacity .22s ease, transform .32s cubic-bezier(.2, .7, .2, 1); }
+  .det.open .det-in { opacity: 1; transform: none; transition-delay: .05s; }
+  .row { transition: background-color .2s ease; }
+  .reveal { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .32s cubic-bezier(.2, .7, .2, 1); }
+  .reveal.open { grid-template-rows: 1fr; }
+  .reveal > div { overflow: hidden; min-height: 0; }
+  .reveal #satlist { opacity: 0; transition: opacity .22s ease; }
+  .reveal.open #satlist { opacity: 1; transition-delay: .05s; }
+  @media (prefers-reduced-motion: reduce) {
+    .det, .det-in, .reveal, .reveal #satlist, .row { transition: none !important; }
+    svg.polar .halo { animation: none; }
+  }
   .det-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 8px 32px; align-items: start; }
   .times { display: grid; grid-template-columns: repeat(3, max-content); gap: 4px 28px; margin: 6px 0 16px; }
   .times div span { display: block; color: var(--muted); font-size: 12.5px; }
@@ -122,7 +138,12 @@
   svg.polar .tick { fill: var(--surface); stroke: var(--track); stroke-width: 1.6; }
   svg.polar .tick.peak { fill: var(--track); }
   svg.polar .tlabel { fill: var(--track); font-weight: 600; }
-  svg.polar .halo { fill: var(--live); fill-opacity: .18; }
+  svg.polar .halo { fill: var(--live); fill-opacity: .3; stroke: var(--live); stroke-width: 1.2; stroke-opacity: .7; transform-box: fill-box; transform-origin: center; animation: pulse 1.8s cubic-bezier(.2, .6, .3, 1) infinite; }
+  @keyframes pulse {
+    0%   { transform: scale(.6); opacity: .9; }
+    70%  { transform: scale(2.1); opacity: 0; }
+    100% { transform: scale(2.1); opacity: 0; }
+  }
   svg.polar .satdot { fill: var(--live); }
   svg.polar .satname { fill: var(--live); font-weight: 700; font-variation-settings: "MONO" 0; font-size: 11px; }
   svg.polar .info { fill: var(--ink); }
@@ -137,7 +158,7 @@
   .notice ol { margin: 4px 0 0; padding-left: 20px; }
   .satbox { margin-top: 18px; }
   .satbox .linkbtn { color: var(--ink); }
-  #satlist { margin-top: 8px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; display: flex; flex-wrap: wrap; gap: 4px 14px; max-width: 80ch; }
+  #satlist { margin-top: 8px; margin-bottom: 2px; padding: 10px 12px; background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; display: flex; flex-wrap: wrap; gap: 4px 14px; max-width: 80ch; }
   #satlist a { white-space: nowrap; font-weight: 500; }
   #satlist a.missing { color: var(--muted); }
   .empty { padding: 18px 12px; color: var(--muted); }
@@ -161,7 +182,7 @@
     .row .start, .row .dur, .row .el, .row .az { grid-area: info; }
     .row .info { grid-area: info; display: flex; flex-wrap: wrap; gap: 2px 14px; color: var(--muted); font-size: 13.5px; }
     .row .info .el b { color: var(--ink); }
-    .det { padding: 4px 12px 14px; }
+    .det-in { padding: 4px 12px 14px; }
     .det-grid { grid-template-columns: 1fr; }
     svg.polar { margin: 4px auto 0; max-width: 340px; }
     .times { gap: 4px 22px; }
@@ -205,8 +226,8 @@
     </ol>
   </div>
   <div class="satbox">
-    <button class="linkbtn" id="satlist-toggle" aria-expanded="false" aria-controls="satlist"></button>
-    <div id="satlist" hidden></div>
+    <button class="linkbtn" id="satlist-toggle" aria-expanded="false" aria-controls="satreveal"></button>
+    <div class="reveal" id="satreveal"><div><div id="satlist"></div></div></div>
   </div>
 </footer>
 
@@ -552,7 +573,7 @@ function polarInner(p) {
     const base = vl < 8 ? 'central' : vy / vl > 0.35 ? 'hanging' : vy / vl < -0.35 ? 'auto' : 'central';
     s += `<circle class="tick${cls}" cx="${f(x)}" cy="${f(y)}" r="3"/><text class="tlabel" x="${f(vl < 8 ? x + 7 : lx)}" y="${f(ly)}" text-anchor="${anchor}" dominant-baseline="${base}">${hhmm(tt)}</text>`;
   }
-  s += `<g class="satpos" hidden><text class="satname" x="8" y="-7">${esc(p.sat.name)}</text><circle class="halo" r="8"/><circle class="satdot" r="4"/></g>`;
+  s += `<g class="satpos" hidden><text class="satname" x="8" y="-7">${esc(p.sat.name)}</text><circle class="halo" r="8" style="animation-delay:-${Date.now() % 1800}ms"/><circle class="satdot" r="4"/></g>`;
   s += `<text class="info" data-k="azel" x="-36" y="234"></text><text class="info" data-k="los" x="276" y="234" text-anchor="end"></text>`;
   const rl = rotLabel();
   if (rl) s += `<text class="info" x="276" y="10" text-anchor="end">${esc(rl)}</text>`;
@@ -698,7 +719,7 @@ function setupCompass() {
 function updatePlots() {
   const now = Date.now();
   for (const svg of document.querySelectorAll('svg.polar')) {
-    if (svg.closest('[hidden]')) continue;
+    if (svg.closest('.det:not(.open)')) continue;
     const r = satrecs.find(x => x.sat.name === svg.dataset.sat);
     const start = +svg.dataset.start, end = +svg.dataset.end;
     const g = svg.querySelector('.satpos'), azel = svg.querySelector('[data-k=azel]'), los = svg.querySelector('[data-k=los]');
@@ -754,15 +775,26 @@ function draw() {
     placeEta(row);
     const det = document.createElement('div');
     det.className = 'det';
-    const fill = () => { det.innerHTML = detailsHTML(p); det.querySelector('svg.polar')._pass = p; };
+    det.innerHTML = '<div class="det-clip"><div class="det-in"></div></div>';
+    const inner = det.querySelector('.det-in');
+    const fill = () => { inner.innerHTML = detailsHTML(p); inner.querySelector('svg.polar')._pass = p; };
     const open = openRows.has(id);
-    det.hidden = !open;
     row.setAttribute('aria-expanded', String(open));
-    if (open) fill();
+    det.inert = !open;
+    if (open) { fill(); det.classList.add('open'); }
     const toggle = () => {
-      det.hidden = !det.hidden;
-      row.setAttribute('aria-expanded', String(!det.hidden));
-      if (det.hidden) openRows.delete(id); else { openRows.add(id); fill(); updatePlots(); }
+      const willOpen = !det.classList.contains('open');
+      row.setAttribute('aria-expanded', String(willOpen));
+      det.inert = !willOpen;
+      if (willOpen) {
+        openRows.add(id);
+        fill(); updatePlots();
+        void det.offsetHeight;                    // wymuś układ, żeby animacja ruszyła od zera
+        det.classList.add('open');
+      } else {
+        openRows.delete(id);
+        det.classList.remove('open');
+      }
     };
     row.addEventListener('click', toggle);
     row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
@@ -824,7 +856,7 @@ function calculate() {
 }
 
 function setSatlistToggle() {
-  const open = !$('satlist').hidden;
+  const open = $('satreveal').classList.contains('open');
   const b = $('satlist-toggle');
   b.textContent = `${open ? '▾' : '▸'} Satelity w bazie (${SATS.length})`;
   b.setAttribute('aria-expanded', String(open));
@@ -895,10 +927,12 @@ async function loadTLE(force) {
       window.open(a.href, '_blank', 'noopener');
     }
   });
-  $('satlist').hidden = store.get('satlist_open') !== '1';
+  $('satreveal').classList.toggle('open', store.get('satlist_open') === '1');
+  $('satreveal').inert = !$('satreveal').classList.contains('open');
   $('satlist-toggle').addEventListener('click', () => {
-    $('satlist').hidden = !$('satlist').hidden;
-    store.set('satlist_open', $('satlist').hidden ? '0' : '1');
+    const open = $('satreveal').classList.toggle('open');
+    $('satreveal').inert = !open;
+    store.set('satlist_open', open ? '1' : '0');
     setSatlistToggle();
   });
   document.querySelector('label[for=tlefile2]').addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('tlefile2').click(); } });
