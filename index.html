@@ -209,7 +209,7 @@
     h1 { font-size: 22px; }
     /* nagłówek w dwóch liniach: nazwa | grid, filtry | kompas */
     header.top { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px 12px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
-    header.top > div:first-child { display: contents; }
+    header.top > .brand { display: contents; }
     header.top h1 { grid-column: 1; }
     header.top .where { grid-column: 2; margin: 0; white-space: nowrap; }
     .controls { grid-column: 1 / -1; width: 100%; }
@@ -249,7 +249,7 @@
 
 <header class="top">
   <div class="lang lang-top" role="group" data-i18n-aria="langGroup"><button data-lang="pl" lang="pl">PL</button><button data-lang="en" lang="en">EN</button></div>
-  <div>
+  <div class="brand">
     <h1>SAT Predictor</h1>
     <p class="where">Grid: <button class="loc mono" id="loc" data-i18n-title="gridTitle"></button></p>
   </div>
@@ -518,7 +518,7 @@ const I18N = {
     failStep1: 'Pobierz plik z <a href="https://celestrak.org/NORAD/elements/gp.php?GROUP=amateur&FORMAT=tle" target="_blank" rel="noopener">CelesTrak</a> lub <a href="https://www.amsat.org/tle/current/nasabare.txt" target="_blank" rel="noopener">AMSAT</a> i zapisz go jako .txt.',
     failStep2: 'Wczytaj go tutaj (możesz zaznaczyć kilka plików):',
     colMode: 'Tryb', colSat: 'Satelita', colRise: 'Wschód', colDur: 'Czas', colEta: 'Do wschodu', colMax: 'Maks.', colAz: 'Azymut',
-    now: 'TERAZ!', in: 'za', min: 'min', h: 'h', upNow: 'Satelita jest nad horyzontem', toRise: 'Do wschodu', maxEl: 'Maksymalna elewacja',
+    now: 'QRV', in: 'za', min: 'min', h: 'h', upNow: 'Satelita jest nad horyzontem', toRise: 'Do wschodu', maxEl: 'Maksymalna elewacja',
     azPath: 'Azymut: wschód → szczyt → zachód', rise: 'Wschód', peak: 'Szczyt', set: 'Zachód',
     down: 'Downlink', up: 'Uplink', beacon: 'Beacon', type: 'Rodzaj', note: 'Uwagi', age: 'wiek danych', n2yo: 'Sprawdź na N2YO',
     plotAria: n => `Wykres przelotu ${n} na niebie`,
@@ -545,7 +545,7 @@ const I18N = {
     failStep1: 'Download the file from <a href="https://celestrak.org/NORAD/elements/gp.php?GROUP=amateur&FORMAT=tle" target="_blank" rel="noopener">CelesTrak</a> or <a href="https://www.amsat.org/tle/current/nasabare.txt" target="_blank" rel="noopener">AMSAT</a> and save it as .txt.',
     failStep2: 'Load it here (you can select several files):',
     colMode: 'Mode', colSat: 'Satellite', colRise: 'AOS', colDur: 'Duration', colEta: 'Starts in', colMax: 'Max', colAz: 'Azimuth',
-    now: 'NOW!', in: 'in', min: 'min', h: 'h', upNow: 'The satellite is above the horizon', toRise: 'Time to AOS', maxEl: 'Maximum elevation',
+    now: 'QRV', in: 'in', min: 'min', h: 'h', upNow: 'The satellite is above the horizon', toRise: 'Time to AOS', maxEl: 'Maximum elevation',
     azPath: 'Azimuth: AOS → max → LOS', rise: 'AOS', peak: 'Max', set: 'LOS',
     down: 'Downlink', up: 'Uplink', beacon: 'Beacon', type: 'Type', note: 'Notes', age: 'data age', n2yo: 'View on N2YO',
     plotAria: n => `Sky plot of the ${n} pass`,
