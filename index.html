@@ -160,6 +160,7 @@
   .plotcap:empty { visibility: hidden; }
   svg.polar { width: 100%; max-width: 320px; height: auto; display: block; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; margin: 0 auto; }
   svg.polar.dragging { cursor: grabbing; }
+  body.compass-on svg.polar { touch-action: auto; cursor: default; }
   svg.polar text { font-family: var(--sans); font-variation-settings: "MONO" 1; font-size: 10px; fill: var(--muted); }
   svg.polar .disc { fill: var(--paper); }
   /* grubość linii w pikselach ekranu, niezależnie od rozmiaru wykresu (telefon = komputer) */
@@ -535,9 +536,9 @@ const I18N = {
     azPath: 'Azymut: wschód → szczyt → zachód', rise: 'Wschód', peak: 'Szczyt', set: 'Zachód',
     down: 'Downlink', up: 'Uplink', beacon: 'Beacon', type: 'Rodzaj', note: 'Uwagi', age: 'wiek danych', n2yo: 'Sprawdź na N2YO',
     plotAria: n => `Wykres przelotu ${n} na niebie`,
-    plotTipCompass: 'Przeciągnij, aby poprawić kalibrację kompasu. Dwuklik przywraca domyślną korektę.',
+    plotTipCompass: 'Wykres obraca się razem z telefonem.',
     plotTip: 'Przeciągnij, aby obrócić kompas. Dwuklik ustawia północ u góry.',
-    waitCompass: 'Czekam na odczyt kompasu…', corr: 'Korekta', rot: 'Obrót', los: 'LOS za', aos: 'AOS za',
+    waitCompass: 'Czekam na odczyt kompasu…', decl: 'Deklinacja', corr: 'Korekta', rot: 'Obrót', los: 'LOS za', aos: 'AOS za',
     noTLE: 'Brak danych orbitalnych. Odśwież dane TLE albo wczytaj plik TLE na dole strony.',
     noPasses: 'Żaden satelita z wybranych rodzajów emisji nie przelatuje w najbliższej dobie. Włącz inne filtry u góry.',
     tleFrom: 'Dane orbitalne z', tleNone: 'Brak danych orbitalnych.', tleLoading: 'Pobieram dane orbitalne…',
@@ -562,9 +563,9 @@ const I18N = {
     azPath: 'Azimuth: AOS → max → LOS', rise: 'AOS', peak: 'Max', set: 'LOS',
     down: 'Downlink', up: 'Uplink', beacon: 'Beacon', type: 'Type', note: 'Notes', age: 'data age', n2yo: 'View on N2YO',
     plotAria: n => `Sky plot of the ${n} pass`,
-    plotTipCompass: 'Drag to fine-tune the compass calibration. Double-click restores the default correction.',
+    plotTipCompass: 'The plot rotates with your phone.',
     plotTip: 'Drag to rotate the compass. Double-click puts north back on top.',
-    waitCompass: 'Waiting for compass reading…', corr: 'Correction', rot: 'Rotation', los: 'LOS in', aos: 'AOS in',
+    waitCompass: 'Waiting for compass reading…', decl: 'Declination', corr: 'Correction', rot: 'Rotation', los: 'LOS in', aos: 'AOS in',
     noTLE: 'No orbital data. Refresh the TLE data or load a TLE file at the bottom of the page.',
     noPasses: 'None of the selected modes has a pass in the next 24 hours. Turn on other filters at the top.',
     tleFrom: 'Orbital data from', tleNone: 'No orbital data.', tleLoading: 'Downloading orbital data…',
@@ -766,10 +767,54 @@ function redrawPlots() {
 }
 
 // ---------- obrót kompasu: ręczny (komputer) lub magnetometr (telefon) ----------
-const DEFAULT_DECL = 6;          // deklinacja magnetyczna w Polsce ok. +5…+7° (wschodnia), 2026
+// Model WMM2025 (NOAA/NGA, domena publiczna) – tylko deklinacja magnetyczna, ważny 2025–2030
+const WMM = { epoch: 2025, g: [0,-29351.8,-1410.8,-2556.6,2951.1,1649.3,1361,-2404.1,1243.8,453.6,895,799.5,55.7,-281.1,12.1,-233.2,368.9,187.2,-138.7,-142,20.9,64.4,63.8,76.9,-115.7,-40.9,14.9,-60.7,79.5,-77,-8.8,59.3,15.8,2.5,-11.1,14.2,23.2,10.8,-17.5,2,-21.7,16.9,15,-16.8,0.9,4.6,7.8,3,-0.2,-2.5,-13.1,2.4,8.6,-8.7,-12.9,-1.3,-6.4,0.2,2,-1,-0.6,-0.9,1.5,0.9,-2.7,-3.9,2.9,-1.5,-2.5,2.4,-0.6,-0.1,-0.6,-0.1,1.1,-1,-0.2,2.6,-2,-0.2,0.3,1.2,-1.3,0.6,0.6,0.5,-0.1,-0.4,-0.2,-1.3,-0.7],
+  h: [0,0,4545.4,0,-3133.6,-815.1,0,-56.6,237.5,-549.5,0,278.6,-133.9,212,-375.6,0,45.4,220.2,-122.9,43,106.1,0,-18.4,16.8,48.8,-59.8,10.9,72.7,0,-48.9,-14.4,-1,23.4,-7.4,-25.1,-2.3,0,7.1,-12.6,11.4,-9.7,12.7,0.7,-5.2,3.9,0,-24.8,12.2,8.3,-3.3,-5.2,7.2,-0.6,0.8,10,0,3.3,0,2.4,5.3,-9.1,0.4,-4.2,-3.8,0.9,-9.1,0,0,2.9,-0.6,0.2,0.5,-0.3,-1.2,-1.7,-2.9,-1.8,-2.3,0,-1.3,0.7,1,-1.4,0,0.6,-0.1,0.8,0.1,-1,0.1,0.2],
+  gd: [0,12,9.7,-11.6,-5.2,-8,-1.3,-4.2,0.4,-15.6,-1.6,-2.4,-6,5.6,-7,0.6,1.4,0,0.6,2.2,0.9,-0.2,-0.4,0.9,1.2,-0.9,0.3,0.9,0,-0.1,-0.1,0.5,-0.1,-0.8,-0.8,0.8,-0.1,0.2,0,0.5,-0.1,0.3,0.2,0,0.2,0,-0.1,0.1,0.3,-0.3,0,0.3,-0.1,0.1,-0.1,0.1,0,0.1,0.1,0,-0.3,0,-0.1,-0.1,0,0,0,0,0,0,0,-0.1,0,0,-0.1,-0.1,-0.1,-0.1,0,0,0,0,0,0,0.1,0,0,0,-0.1,0,-0.1],
+  hd: [0,0,-21.5,0,-27.7,-12.1,0,4,-0.3,-4.1,0,-1.1,4.1,1.6,-4.4,0,-0.5,2.2,0.4,1.7,1.9,0,0.3,-1.6,-0.4,0.9,0.7,0.9,0,0.6,0.5,-0.8,0,-1,0.6,-0.2,0,-0.2,0.5,-0.4,0.4,-0.5,-0.6,0.3,0.2,0,-0.3,0.3,-0.3,0.3,0.2,-0.1,-0.2,0.4,0.1,0,0,0,-0.2,0.1,-0.1,0.1,0,-0.1,0.2,0,0,0,0.1,0,0.1,0,0,0.1,0,0,0,0,0,0,0,-0.1,0.1,0,0,0,0,0,0,0,-0.1] };
+function magDeclination(latDeg, lonDeg, date) {
+  const t = (date.getUTCFullYear() + (date - Date.UTC(date.getUTCFullYear(), 0, 1)) / 31557600000) - WMM.epoch;
+  const A = 6378.137, F = 1 / 298.257223563, E2 = F * (2 - F), RE = 6371.2;
+  const phi = latDeg * Math.PI / 180, lam = lonDeg * Math.PI / 180;
+  const sp = Math.sin(phi), cp = Math.cos(phi);
+  const N = A / Math.sqrt(1 - E2 * sp * sp);
+  const x = N * cp, z = N * (1 - E2) * sp;
+  const r = Math.hypot(x, z), phic = Math.atan2(z, x);
+  const s = Math.sin(phic), u = Math.max(1e-9, Math.cos(phic));
+  const NMAX = 12, P = [], D = [];
+  for (let m = 0; m <= NMAX; m++) {
+    P[m] = []; let pmm = 1;
+    for (let k = 1; k <= m; k++) pmm *= (2 * k - 1) * u;
+    P[m][m] = pmm;
+    if (m < NMAX) P[m][m + 1] = s * (2 * m + 1) * pmm;
+    for (let n = m + 2; n <= NMAX; n++) P[m][n] = ((2 * n - 1) * s * P[m][n - 1] - (n + m - 1) * P[m][n - 2]) / (n - m);
+  }
+  const fact = n => { let f = 1; for (let i = 2; i <= n; i++) f *= i; return f; };
+  let X = 0, Y = 0, Z = 0;
+  for (let n = 1; n <= NMAX; n++) {
+    const ar = Math.pow(RE / r, n + 2);
+    for (let m = 0; m <= n; m++) {
+      const k = n * (n + 1) / 2 + m;
+      const g = WMM.g[k] + t * WMM.gd[k], h = WMM.h[k] + t * WMM.hd[k];
+      const S = Math.sqrt((m ? 2 : 1) * fact(n - m) / fact(n + m));
+      const pnm = S * P[m][n];
+      const pn1 = n - 1 >= m ? P[m][n - 1] : 0;
+      const dp = S * ((n + m) * pn1 - n * s * P[m][n]) / u;
+      const cm = Math.cos(m * lam), sm = Math.sin(m * lam);
+      X += -ar * (g * cm + h * sm) * dp;
+      Y += ar * m * (g * sm - h * cm) * pnm / u;
+      Z += -(n + 1) * ar * (g * cm + h * sm) * pnm;
+    }
+  }
+  const psi = phic - phi;
+  const Xg = X * Math.cos(psi) - Z * Math.sin(psi);
+  return Math.atan2(Y, Xg) * 180 / Math.PI;
+}
+// deklinacja magnetyczna dla aktualnego lokatora (np. KO02 ≈ +7°)
+const declinationHere = () => { const ll = gridToLatLon(locator); return ll ? magDeclination(ll.lat, ll.lon, new Date()) : 0; };
 let manualRot = 0;               // obrót ustawiony ręcznie
 let compassOn = false;           // czy obraca magnetometr
-let compassCorr = DEFAULT_DECL;  // korekta kompasu: deklinacja + ewentualna poprawka użytkownika
+let compassCorr = 0;             // deklinacja magnetyczna (liczona z lokatora, bez ręcznej korekty)
 let heading = null;              // kierunek magnetyczny telefonu (wygładzony), stopnie
 const norm = a => ((a % 360) + 360) % 360;
 
@@ -801,7 +846,7 @@ function rotLabel() {
   if (compassOn) {
     if (heading === null) return T('waitCompass');
     const c = Math.round(compassCorr);
-    return `${T('corr')}: ${c > 0 ? '+' : c < 0 ? '−' : ''}${Math.abs(c)}°`;
+    return `${T('decl')}: ${c > 0 ? '+' : c < 0 ? '−' : ''}${Math.abs(c)}°`;
   }
   return manualRot ? `${T('rot')}: ${Math.round(norm(manualRot))}°` : '';
 }
@@ -809,8 +854,6 @@ function rotLabel() {
 function setupPlotRotation() {
   const saved = parseFloat(store.get('plot_rot'));
   if (isFinite(saved)) manualRot = saved;
-  const savedC = parseFloat(store.get('compass_corr'));
-  if (isFinite(savedC)) compassCorr = savedC;
   plotRot = manualRot;
   let drag = null;
   const angleOf = (svg, e) => {
@@ -821,7 +864,7 @@ function setupPlotRotation() {
   };
   document.addEventListener('pointerdown', e => {
     const svg = e.target.closest && e.target.closest('svg.polar');
-    if (!svg || e.button > 0) return;
+    if (!svg || e.button > 0 || compassOn) return;   // przy włączonym kompasie wykres tylko podąża za telefonem
     e.preventDefault();
     drag = { svg, a0: angleOf(svg, e), r0: manualRot, c0: compassCorr, id: e.pointerId };
     svg.classList.add('dragging');
@@ -830,12 +873,7 @@ function setupPlotRotation() {
   document.addEventListener('pointermove', e => {
     if (!drag || e.pointerId !== drag.id) return;
     const delta = angleOf(drag.svg, e) - drag.a0;
-    if (compassOn) {
-      // przy włączonym kompasie przeciąganie poprawia kalibrację magnetometru
-      let c = drag.c0 - delta;
-      c = norm(c + 180) - 180;
-      if (c !== compassCorr) { compassCorr = c; applyRot(); }
-    } else {
+    {
       let r = norm(drag.r0 + delta);
       if (Math.abs(r - Math.round(r / 90) * 90) < 3) r = Math.round(r / 90) * 90 % 360;   // lekkie „przyciąganie” do 0/90/180/270
       if (r !== manualRot) { manualRot = r; applyRot(); }
@@ -846,14 +884,12 @@ function setupPlotRotation() {
     drag.svg.classList.remove('dragging');
     drag = null;
     store.set('plot_rot', String(manualRot));
-    store.set('compass_corr', String(compassCorr));
   };
   document.addEventListener('pointerup', end);
   document.addEventListener('pointercancel', end);
   document.addEventListener('dblclick', e => {
-    if (!(e.target.closest && e.target.closest('svg.polar'))) return;
-    if (compassOn) { compassCorr = DEFAULT_DECL; store.set('compass_corr', String(compassCorr)); }
-    else { manualRot = 0; store.set('plot_rot', '0'); }
+    if (compassOn || !(e.target.closest && e.target.closest('svg.polar'))) return;
+    manualRot = 0; store.set('plot_rot', '0');
     applyRot();
   });
   setupCompass();
@@ -865,7 +901,7 @@ function setupCompass() {
   const isPhone = window.matchMedia && matchMedia('(pointer: coarse)').matches;
   if (!('DeviceOrientationEvent' in window) || !isPhone) return;     // na komputerze bez zmian
   wrap.hidden = false;
-  const setBtn = () => { btn.setAttribute('aria-checked', String(compassOn)); };
+  const setBtn = () => { btn.setAttribute('aria-checked', String(compassOn)); document.body.classList.toggle('compass-on', compassOn); };
   setBtn();
 
   let sx = 0, sy = 0;
@@ -908,7 +944,7 @@ function setupCompass() {
         if (r !== 'granted') { alert(T('noPerm')); return; }
       } catch (err) { alert(T('compassFail')); return; }
     }
-    compassOn = true; heading = null; sx = sy = 0;
+    compassOn = true; heading = null; sx = sy = 0; compassCorr = declinationHere();
     start(); setBtn(); applyRot(); startCompassLoop();
     setTimeout(() => {
       if (compassOn && heading === null) alert(T('noData'));
@@ -1231,6 +1267,7 @@ async function loadTLE(force) {
     if (v && gridToLatLon(v.trim())) {
       locator = v.trim().toUpperCase();
       store.set('locator', locator);
+      compassCorr = declinationHere();
       history.replaceState(null, '', '#' + locator);
       setLocatorUI();
       calculate();
