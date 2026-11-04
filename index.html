@@ -95,9 +95,10 @@
   .row { position: relative; cursor: pointer; border-bottom: 1px solid var(--rule); border-radius: 0; }
   /* hover jako nakładka z płynnym zanikaniem – działa też na pulsujących wierszach */
   .row::after { content: ""; position: absolute; inset: 0; background: var(--hover); opacity: 0; transition: opacity .3s ease; pointer-events: none; }
-  .row:hover::after { opacity: 1; transition-duration: .15s; }
+  @media (hover: hover) { .row:hover::after { opacity: 1; transition-duration: .15s; } }
   .row > *, .row .info > * { position: relative; z-index: 1; }
-  .row[aria-expanded="true"] { background: var(--surface); border-bottom-color: transparent; }
+  .row[aria-expanded="true"] { background: var(--hover); border-bottom-color: transparent; }
+  .row.leaving { pointer-events: none; }
   /* przelot w trakcie: tło zwiniętego wiersza delikatnie pulsuje */
   .row.on[aria-expanded="false"] { animation: rowpulse 1.2s ease-in-out infinite alternate; }
   @keyframes rowpulse {
@@ -160,7 +161,6 @@
   svg.polar .ring { font-size: 8.5px; }
   svg.polar .track { fill: none; stroke: var(--track); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   svg.polar .tick { fill: var(--surface); stroke: var(--track); stroke-width: 1.6; }
-  svg.polar .tick.peak { fill: var(--track); }
   svg.polar .tlabel { fill: var(--track); font-weight: 600; }
   svg.polar .halo { fill: var(--live); fill-opacity: .3; stroke: var(--live); stroke-width: 1.2; stroke-opacity: .7; transform-box: fill-box; transform-origin: center; animation: pulse 1.8s cubic-bezier(.2, .6, .3, 1) infinite; }
   @keyframes pulse {
@@ -238,6 +238,9 @@
     svg.polar .card { font-size: 12px; }
     .times { gap: 4px 22px; }
     .times div em { display: block; margin-left: 0; }
+    .times { grid-template-columns: repeat(3, 1fr); width: 100%; }
+    .times div:nth-child(2) { text-align: center; }
+    .times div:nth-child(3) { text-align: right; }
   }
   @media (min-width: 721px) {
     .row .info { display: contents; }
@@ -618,7 +621,8 @@ function countdown(ms) {
   return m < 60 ? `${m} ${T('min')}` : `${Math.floor(m / 60)} ${T('h')} ${pad2(m % 60)} ${T('min')}`;
 }
 function etaShort(ms) {
-  const m = Math.max(0, Math.floor(ms / 60000));
+  if (ms < 60000) return `${Math.max(1, Math.ceil(ms / 1000))} s`;   // ostatnia minuta: odliczanie sekund
+  const m = Math.floor(ms / 60000);
   return `${pad2(Math.floor(m / 60))}:${pad2(m % 60)}`;
 }
 
@@ -664,8 +668,8 @@ function detailsHTML(p) {
 // ---------- wykres biegunowy przelotu ----------
 const PC = 120, PR = 96;        // środek i promień wykresu (horyzont)
 let plotRot = 0;                // obrót kompasu w stopniach, wspólny dla wszystkich wykresów
-function polarXY(az, el) {
-  const r = PR * (90 - Math.max(0, el)) / 90, a = (az + plotRot) * Math.PI / 180;
+function polarXY(az, el) {          // współrzędne bez obrotu; obrót robi grupa <g class="rot">
+  const r = PR * (90 - Math.max(0, el)) / 90, a = az * Math.PI / 180;
   return [PC + r * Math.sin(a), PC - r * Math.cos(a)];
 }
 function passTrack(p) {
@@ -691,44 +695,63 @@ function polarSVG(p) {
 function polarInner(p) {
   const pts = passTrack(p);
   const f = n => n.toFixed(1);
+  // tekst obracany „pod prąd”, żeby zawsze był poziomy
+  const cr = (x, y) => ` data-cx="${f(x)}" data-cy="${f(y)}" transform="rotate(${f(-plotRot)} ${f(x)} ${f(y)})"`;
   let s = `<title>${compassOn ? T('plotTipCompass') : T('plotTip')}</title>`;
   s += `<circle cx="${PC}" cy="${PC}" r="${PR + 20}" fill="transparent"/>`;
+  s += `<g class="rot" transform="rotate(${f(plotRot)} ${PC} ${PC})">`;
   s += `<circle class="disc" cx="${PC}" cy="${PC}" r="${PR}"/>`;
   for (const el of [30, 60]) s += `<circle class="grid" cx="${PC}" cy="${PC}" r="${f(PR * (90 - el) / 90)}"/>`;
-  for (const az of [0, 90]) {
-    const [x1, y1] = polarXY(az, 0), [x2, y2] = polarXY(az + 180, 0);
-    s += `<line class="grid" x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}"/>`;
-  }
+  s += `<line class="grid" x1="${PC}" y1="${PC - PR}" x2="${PC}" y2="${PC + PR}"/><line class="grid" x1="${PC - PR}" y1="${PC}" x2="${PC + PR}" y2="${PC}"/>`;
   s += `<circle class="horizon" cx="${PC}" cy="${PC}" r="${PR}"/>`;
-  // podpisy elewacji przy osi 45° (zawsze poziome)
   for (const el of [30, 60]) {
     const [x, y] = polarXY(135, el);
-    s += `<text class="ring" x="${f(x + 2)}" y="${f(y - 2)}">${el}°</text>`;
+    s += `<text class="ring cr" x="${f(x)}" y="${f(y)}" text-anchor="middle" dominant-baseline="central"${cr(x, y)}>${el}°</text>`;
   }
   for (const [az, lbl] of [[0, 'N'], [90, 'E'], [180, 'S'], [270, 'W']]) {
-    const a = (az + plotRot) * Math.PI / 180, rr = PR + 11;
-    s += `<text class="card" x="${f(PC + rr * Math.sin(a))}" y="${f(PC - rr * Math.cos(a))}" text-anchor="middle" dominant-baseline="central">${lbl}</text>`;
+    const a = az * Math.PI / 180, rr = PR + 11, x = PC + rr * Math.sin(a), y = PC - rr * Math.cos(a);
+    s += `<text class="card cr" x="${f(x)}" y="${f(y)}" text-anchor="middle" dominant-baseline="central"${cr(x, y)}>${lbl}</text>`;
   }
   s += `<polyline class="track" points="${pts.map(q => polarXY(q.az, q.el).map(f).join(',')).join(' ')}"/>`;
   const r = satrecs.find(x => x.sat === p.sat);
-  for (const [tt, cls] of [[p.start, ''], [p.peak, ' peak'], [p.end, '']]) {
+  let labels = '';
+  for (const tt of [p.start, p.peak, p.end]) {
     const la = lookAngles(r.satrec, new Date(tt));
     if (!la) continue;
     const [x, y] = polarXY(la.az, la.el);
-    const vx = PC - x, vy = PC - y, vl = Math.hypot(vx, vy) || 1;
-    const lx = x + vx / vl * 8, ly = y + vy / vl * 8;
-    const anchor = vl < 8 ? 'start' : vx / vl > 0.35 ? 'start' : vx / vl < -0.35 ? 'end' : 'middle';
-    const base = vl < 8 ? 'central' : vy / vl > 0.35 ? 'hanging' : vy / vl < -0.35 ? 'auto' : 'central';
-    s += `<circle class="tick${cls}" cx="${f(x)}" cy="${f(y)}" r="3"/><text class="tlabel" x="${f(vl < 8 ? x + 7 : lx)}" y="${f(ly)}" text-anchor="${anchor}" dominant-baseline="${base}">${hhmm(tt)}</text>`;
+    const vx = PC - x, vy = PC - y, vl = Math.hypot(vx, vy);
+    // podpis wyśrodkowany, odsunięty od kropki w stronę środka – dobrze wygląda przy każdym obrocie
+    const lx = vl < 20 ? x : x + vx / vl * 17, ly = vl < 20 ? y - 13 : y + vy / vl * 17;
+    s += `<circle class="tick" cx="${f(x)}" cy="${f(y)}" r="3"/>`;
+    labels += `<text class="tlabel cr" x="${f(lx)}" y="${f(ly)}" text-anchor="middle" dominant-baseline="central"${cr(lx, ly)}>${hhmm(tt)}</text>`;
   }
-  s += `<g class="satpos" hidden><text class="satname" x="8" y="-7">${esc(p.sat.name)}</text><circle class="halo" r="8" style="animation-delay:-${Date.now() % 1800}ms"/><circle class="satdot" r="4"/></g>`;
+  s += labels;
+  s += `<g class="satpos" hidden><circle class="halo" r="8" style="animation-delay:-${Date.now() % 1800}ms"/><circle class="satdot" r="4"/>` +
+       `<g class="nm" transform="rotate(${f(-plotRot)})"><text class="satname" x="0" y="-12" text-anchor="middle">${esc(p.sat.name)}</text></g></g>`;
+  s += `</g>`;
   const v = plotBox(), L = v.x + 4, R = v.x + v.w - 4, B = v.y + v.h - 6;
   s += `<text class="info" data-k="azel" x="${L}" y="${B}"></text><text class="info" data-k="los" x="${R}" y="${B}" text-anchor="end"></text>`;
   return s;
 }
+// szybki obrót wszystkich wykresów: tylko atrybuty transform, bez przebudowy SVG (płynne 60 fps)
+function setPlotRotation() {
+  const a = plotRot.toFixed(2), m = (-plotRot).toFixed(2);
+  for (const svg of document.querySelectorAll('svg.polar')) {
+    if (!svg._g) { svg._g = svg.querySelector('g.rot'); svg._cr = [...svg.querySelectorAll('.cr')]; svg._nm = svg.querySelector('g.nm'); }
+    if (!svg._g) continue;
+    svg._g.setAttribute('transform', `rotate(${a} ${PC} ${PC})`);
+    for (const el of svg._cr) el.setAttribute('transform', `rotate(${m} ${el.dataset.cx} ${el.dataset.cy})`);
+    if (svg._nm) svg._nm.setAttribute('transform', `rotate(${m})`);
+  }
+}
+function updateCaptions() {
+  const rl = rotLabel(), tip = compassOn ? T('plotTipCompass') : T('plotTip');
+  for (const c of document.querySelectorAll('.plotcap')) if (c.textContent !== rl) c.textContent = rl;
+  for (const ti of document.querySelectorAll('svg.polar > title')) if (ti.textContent !== tip) ti.textContent = tip;
+}
 function redrawPlots() {
-  for (const svg of document.querySelectorAll('svg.polar')) if (svg._pass) svg.innerHTML = polarInner(svg._pass);
-  for (const c of document.querySelectorAll('.plotcap')) c.textContent = rotLabel();
+  for (const svg of document.querySelectorAll('svg.polar')) if (svg._pass) { svg.innerHTML = polarInner(svg._pass); svg._g = null; }
+  updateCaptions();
   updatePlots();
 }
 
@@ -741,9 +764,29 @@ let heading = null;              // kierunek magnetyczny telefonu (wygładzony),
 const norm = a => ((a % 360) + 360) % 360;
 
 function applyRot() {
-  plotRot = (compassOn && heading !== null) ? norm(-(heading + compassCorr)) : manualRot;
-  redrawPlots();
+  if (!compassOn) plotRot = manualRot;
+  else if (heading !== null) plotRot = norm(-(heading + compassCorr));   // natychmiast (np. przy przeciąganiu)
+  setPlotRotation();
+  updateCaptions();
 }
+// pętla animacji kompasu: wykres płynnie „dogania” odczyt magnetometru w każdej klatce
+let compassRaf = 0, compassLastT = 0;
+function compassFrame(ts) {
+  compassRaf = 0;
+  if (!compassOn) return;
+  if (heading !== null) {
+    const target = norm(-(heading + compassCorr));
+    const d = ((target - plotRot + 540) % 360) - 180;
+    const dt = compassLastT ? Math.min(100, ts - compassLastT) : 16;
+    const k = 1 - Math.exp(-dt / 70);                  // stała czasowa ok. 70 ms
+    const next = Math.abs(d) < 0.02 ? target : norm(plotRot + d * k);
+    if (next !== plotRot) { plotRot = next; setPlotRotation(); }
+  }
+  compassLastT = ts;
+  compassRaf = requestAnimationFrame(compassFrame);
+}
+function startCompassLoop() { if (!compassRaf) { compassLastT = 0; compassRaf = requestAnimationFrame(compassFrame); } }
+function stopCompassLoop() { if (compassRaf) cancelAnimationFrame(compassRaf); compassRaf = 0; }
 function rotLabel() {
   if (compassOn) {
     if (heading === null) return T('waitCompass');
@@ -815,20 +858,19 @@ function setupCompass() {
   const setBtn = () => { btn.setAttribute('aria-checked', String(compassOn)); };
   setBtn();
 
-  let sx = 0, sy = 0, lastDraw = 0, raf = 0;
+  let sx = 0, sy = 0;
   const onHeading = h => {
     if (h === null || !isFinite(h)) return;
     const so = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
     h = norm(h + so);
-    // wygładzanie (średnia wektorowa, żeby 359°→0° nie skakało)
-    const k = heading === null ? 1 : 0.25;
+    // lekkie wygładzenie szumu czujnika (średnia wektorowa, żeby 359°→0° nie skakało);
+    // płynność ruchu zapewnia pętla compassFrame
+    const first = heading === null;
+    const k = first ? 1 : 0.35;
     sx = sx * (1 - k) + Math.sin(h * Math.PI / 180) * k;
     sy = sy * (1 - k) + Math.cos(h * Math.PI / 180) * k;
     heading = norm(Math.atan2(sx, sy) * 180 / Math.PI);
-    const now = performance.now();
-    if (!raf && now - lastDraw > 100) {
-      raf = requestAnimationFrame(() => { raf = 0; lastDraw = performance.now(); applyRot(); });
-    }
+    if (first) { plotRot = norm(-(heading + compassCorr)); setPlotRotation(); updateCaptions(); }
   };
   const onAbs = e => { if (e.absolute !== false && e.alpha !== null) onHeading(360 - e.alpha); };
   const onIOS = e => {
@@ -845,7 +887,7 @@ function setupCompass() {
   };
 
   btn.addEventListener('click', async () => {
-    if (compassOn) { compassOn = false; heading = null; stop(); setBtn(); applyRot(); return; }
+    if (compassOn) { compassOn = false; heading = null; stop(); stopCompassLoop(); setBtn(); applyRot(); return; }
     if (!window.isSecureContext) {
       alert(T('needHttps'));
       return;
@@ -857,7 +899,7 @@ function setupCompass() {
       } catch (err) { alert(T('compassFail')); return; }
     }
     compassOn = true; heading = null; sx = sy = 0;
-    start(); setBtn(); applyRot();
+    start(); setBtn(); applyRot(); startCompassLoop();
     setTimeout(() => {
       if (compassOn && heading === null) alert(T('noData'));
     }, 3000);
@@ -876,12 +918,6 @@ function updatePlots() {
     if (la && la.el >= 0) {
       const [x, y] = polarXY(la.az, la.el);
       g.setAttribute('transform', `translate(${x.toFixed(1)},${y.toFixed(1)})`);
-      const nm = g.querySelector('text');
-      if (isNarrow()) {                       // telefon: nazwa nad kropką, wyśrodkowana
-        nm.setAttribute('text-anchor', 'middle'); nm.setAttribute('x', '0'); nm.setAttribute('y', '-11');
-      } else {                                // komputer: nazwa na zewnątrz, podpisy czasu do środka
-        nm.setAttribute('text-anchor', x > PC ? 'start' : 'end'); nm.setAttribute('x', x > PC ? '6' : '-6'); nm.setAttribute('y', '-7');
-      }
       g.removeAttribute('hidden');
       azel.textContent = `AZ ${Math.round(la.az)}°  EL ${Math.round(la.el)}°`;
       const sec = Math.max(0, Math.round((end - now) / 1000));
@@ -900,72 +936,181 @@ function updatePlots() {
 
 
 // ---------- lista ----------
+// stały identyfikator przelotu (minuta wschodu) – przeliczenie orbit nie „podmienia” wierszy
+const passId = p => `${p.sat.name}_${Math.round(p.start / 60000)}`;
 const PULSE_CYCLE = 2400;     // pełny cykl pulsu wiersza (1,2 s rozjaśniania + 1,2 s przygasania)
+const rowEls = new Map();     // id przelotu → { p, row, det } – wiersze są aktualizowane w miejscu, a nie budowane od nowa
+const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const EASE = 'cubic-bezier(.2, .7, .2, 1)';
+
+// faza pulsu liczona od zegara, więc wiersze pulsują równo mimo zmian na liście
+function syncPulse(row) {
+  if (!row.classList.contains('on')) return;
+  row.style.animationDelay = `-${(Date.now() - (row._shift || 0) + PULSE_CYCLE * 1000) % PULSE_CYCLE}ms`;
+}
+function restartPulse(row) {
+  row.style.animation = 'none'; void row.offsetWidth; row.style.animation = '';
+  syncPulse(row);
+}
+
+function makeEntry(p, id) {
+  const e = { p, id };
+  const row = e.row = document.createElement('div');
+  row.className = 'row';
+  row.tabIndex = 0;
+  row.setAttribute('role', 'button');
+  const det = e.det = document.createElement('div');
+  det.className = 'det';
+  det.innerHTML = '<div class="det-clip"><div class="det-in"></div></div>';
+  const inner = det.querySelector('.det-in');
+  e.fill = () => { inner.innerHTML = detailsHTML(e.p); const s = inner.querySelector('svg.polar'); s._pass = e.p; s._g = null; det._lang = lang; det._narrow = isNarrow(); setPlotRotation(); };
+  const open = openRows.has(id);
+  row.setAttribute('aria-expanded', String(open));
+  det.inert = !open;
+  if (open) { e.fill(); det.classList.add('open'); }
+  const toggle = () => {
+    const willOpen = !det.classList.contains('open');
+    row.setAttribute('aria-expanded', String(willOpen));
+    det.inert = !willOpen;
+    if (willOpen) {
+      openRows.add(id);
+      if (!inner.firstChild || det._lang !== lang || det._p !== e.p) { e.fill(); det._p = e.p; }
+      void det.offsetHeight;                    // wymuś układ, żeby animacja ruszyła od zera
+      det.classList.add('open');
+      updatePlots();                            // pozycja satelity od razu, bez czekania na zegar
+    } else {
+      openRows.delete(id);
+      det.classList.remove('open');
+      syncPulse(row);                           // puls wraca we właściwej fazie
+    }
+  };
+  row.addEventListener('click', toggle);
+  row.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggle(); } });
+  return e;
+}
+
+function renderRow(e, now) {
+  const on = now >= e.p.start;
+  e.row.classList.toggle('on', on);
+  e.row.innerHTML = rowHTML(e.p, now);
+  placeEta(e.row);
+  e.row._on = on; e.row._lang = lang; e.row._narrow = isNarrow();
+}
+
+// znikanie: wiersz (i otwarte szczegóły) płynnie się zwija i wygasa
+function animateOut(els) {
+  for (const el of els) {
+    if (!el || !el.isConnected) continue;
+    el.inert = true;
+    el.classList.add('leaving');
+    if (reduceMotion()) { el.remove(); continue; }
+    const h = el.getBoundingClientRect().height;
+    el.style.overflow = 'hidden';
+    const a = el.animate([
+      { height: `${h}px`, opacity: 1 },
+      { height: `${h}px`, opacity: 0, offset: .45 },
+      { height: '0px', opacity: 0, paddingTop: '0px', paddingBottom: '0px', borderBottomWidth: '0px' },
+    ], { duration: 520, easing: 'ease-in-out', fill: 'forwards' });
+    a.onfinish = () => el.remove();
+  }
+}
+// pojawianie: wiersz łagodnie się rozsuwa i rozjaśnia
+function animateIn(el) {
+  if (reduceMotion()) return;
+  const h = el.getBoundingClientRect().height;
+  el.style.overflow = 'hidden';
+  const a = el.animate([
+    { height: '0px', opacity: 0, paddingTop: '0px', paddingBottom: '0px' },
+    { height: `${h}px`, opacity: 0, offset: .5 },
+    { height: `${h}px`, opacity: 1 },
+  ], { duration: 520, easing: EASE });
+  a.onfinish = () => { el.style.overflow = ''; };
+}
+
 function draw() {
   const now = Date.now();
   passes = passes.filter(p => p.end > now);
   const list = $('list');
-  if (!satrecs.length) {
-    list.innerHTML = `<p class="empty">${T('noTLE')}</p>`;
-    return;
-  }
-  const shown = passes.filter(p => filter[p.sat.mode] !== false);
+  const shown = satrecs.length ? passes.filter(p => filter[p.sat.mode] !== false) : [];
   if (!shown.length) {
-    list.innerHTML = `<p class="empty">${T('noPasses')}</p>`;
+    rowEls.clear();
+    list.innerHTML = `<p class="empty">${T(satrecs.length ? 'noPasses' : 'noTLE')}</p>`;
     return;
   }
-  const activeCount = shown.filter(p => now >= p.start).length || 1;
-  let activeIdx = 0;
-  const frag = document.createDocumentFragment();
-  const head = document.createElement('div');
-  head.className = 'cols'; head.setAttribute('aria-hidden', 'true');
-  head.innerHTML = `<span>${T('colMode')}</span><span>${T('colSat')}</span><span>${T('colRise')}</span><span class="r">${T('colDur')}</span><span class="r">${T('colEta')}</span><span class="r">${T('colMax')}</span><span class="r">${T('colAz')}</span>`;
-  frag.appendChild(head);
-  for (const p of shown) {
-    const id = `${p.sat.name}_${p.start}`;
-    const row = document.createElement('div');
-    row.className = 'row' + (now >= p.start ? ' on' : '');
-    if (now >= p.start) {
-      // pulsowanie po kolei: każdy aktywny przelot przesunięty o równą część cyklu
-      // (przy dwóch satelitach – na zmianę); faza ciągła mimo odświeżania listy
-      const shift = Math.round(activeIdx++ * PULSE_CYCLE / activeCount);
-      row.style.animationDelay = `-${(now - shift + PULSE_CYCLE * 10) % PULSE_CYCLE}ms`;
-    }
-    row.tabIndex = 0;
-    row.setAttribute('role', 'button');
-    row.innerHTML = rowHTML(p, now);
-    placeEta(row);
-    const det = document.createElement('div');
-    det.className = 'det';
-    det.innerHTML = '<div class="det-clip"><div class="det-in"></div></div>';
-    const inner = det.querySelector('.det-in');
-    const fill = () => { inner.innerHTML = detailsHTML(p); inner.querySelector('svg.polar')._pass = p; };
-    const open = openRows.has(id);
-    row.setAttribute('aria-expanded', String(open));
-    det.inert = !open;
-    if (open) { fill(); det.classList.add('open'); }
-    const toggle = () => {
-      const willOpen = !det.classList.contains('open');
-      row.setAttribute('aria-expanded', String(willOpen));
-      det.inert = !willOpen;
-      if (willOpen) {
-        openRows.add(id);
-        fill(); updatePlots();
-        void det.offsetHeight;                    // wymuś układ, żeby animacja ruszyła od zera
-        det.classList.add('open');
-      } else {
-        openRows.delete(id);
-        det.classList.remove('open');
-      }
-    };
-    row.addEventListener('click', toggle);
-    row.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
-    frag.appendChild(row);
-    frag.appendChild(det);
+  const first = !list.querySelector('.cols');
+  let head = list.querySelector('.cols');
+  if (!head) {
+    list.innerHTML = '';
+    head = document.createElement('div');
+    head.className = 'cols'; head.setAttribute('aria-hidden', 'true');
+    list.appendChild(head);
   }
-  list.replaceChildren(frag);
+  if (head._lang !== lang) {
+    head.innerHTML = `<span>${T('colMode')}</span><span>${T('colSat')}</span><span>${T('colRise')}</span><span class="r">${T('colDur')}</span><span class="r">${T('colEta')}</span><span class="r">${T('colMax')}</span><span class="r">${T('colAz')}</span>`;
+    head._lang = lang;
+  }
+
+  // dopasuj przeliczone przeloty do istniejących wierszy (ten sam satelita, wschód różni się < 1 min)
+  const idOf = new Map();
+  for (const p of shown) {
+    let id = passId(p);
+    if (!rowEls.has(id)) {
+      for (const [oid, e] of rowEls) {
+        if (e.p.sat === p.sat && Math.abs(e.p.start - p.start) < 60000 && ![...idOf.values()].includes(oid)) { id = oid; break; }
+      }
+    }
+    idOf.set(p, id);
+  }
+  const ids = new Set(idOf.values());
+  for (const [id, e] of rowEls) {
+    if (!ids.has(id)) { animateOut([e.row, e.det]); rowEls.delete(id); }
+  }
+
+  const activeCount = shown.filter(p => now >= p.start).length || 1;
+  let activeIdx = 0, prev = head;
+  const entered = [];
+  for (const p of shown) {
+    const id = idOf.get(p);
+    let e = rowEls.get(id);
+    const isNew = !e;
+    if (isNew) { e = makeEntry(p, id); rowEls.set(id, e); }
+    else if (e.p !== p) { e.p = p; e.det._p = null; }
+    const on = now >= p.start;
+    if (isNew || e.row._on !== on || e.row._lang !== lang || e.row._narrow !== isNarrow()) renderRow(e, now);
+    if (e.det.classList.contains('open') && (e.det._lang !== lang || e.det._narrow !== isNarrow())) e.fill();
+    if (on) {
+      const shift = Math.round(activeIdx++ * PULSE_CYCLE / activeCount);
+      if (e.row._shift !== shift || !e.row.style.animationDelay) { e.row._shift = shift; restartPulse(e.row); }
+    }
+    // ustaw kolejność w DOM bez przebudowy (pomijając wiersze, które właśnie znikają)
+    let next = prev.nextSibling;
+    while (next && next.classList && next.classList.contains('leaving')) next = next.nextSibling;
+    if (next !== e.row) list.insertBefore(e.row, next);
+    if (e.row.nextSibling !== e.det) list.insertBefore(e.det, e.row.nextSibling);
+    prev = e.det;
+    if (isNew && !first) entered.push(e.row);
+  }
+  for (const el of entered) animateIn(el);
+  updateEtas(now);
   updatePositions();
   updatePlots();
+}
+
+// co sekundę: odliczanie „za …”; jeśli przelot się zaczął albo skończył – odśwież listę
+function updateEtas(now) {
+  for (const e of rowEls.values()) {
+    if (now >= e.p.start) continue;
+    const el = e.row.querySelector('.eta');
+    const txt = `${T('in')} ${etaShort(e.p.start - now)}`;
+    if (el && el.textContent !== txt) el.textContent = txt;
+  }
+}
+function tick() {
+  const now = Date.now();
+  for (const e of rowEls.values()) {
+    if (e.p.end <= now || (now >= e.p.start) !== e.row._on) { draw(); return; }
+  }
+  updateEtas(now);
 }
 
 function updatePositions() {
@@ -1136,6 +1281,7 @@ async function loadTLE(force) {
   }, 15000);
   setInterval(updatePositions, 3000);
   setInterval(updatePlots, 1000);
+  setInterval(tick, 1000);
 })();
 </script>
 </body>
