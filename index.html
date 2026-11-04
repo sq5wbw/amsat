@@ -217,6 +217,7 @@
     /* nagłówek w dwóch liniach: nazwa | grid, filtry | kompas */
     header.top { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px 12px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
     header.top > .brand { display: contents; }
+    .list { margin-top: 14px; }   /* ten sam odstęp nad i pod linią nagłówka */
     header.top h1 { grid-column: 1; }
     header.top .where { grid-column: 2; margin: 0; white-space: nowrap; }
     .controls { grid-column: 1 / -1; width: 100%; }
