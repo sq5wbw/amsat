@@ -105,7 +105,11 @@
     from { background-color: transparent; }
     to   { background-color: var(--pulse); }
   }
-  .row.on::before { content: ""; z-index: 2; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; border-radius: 2px; background: var(--live); }
+  /* pasek postępu przelotu: pełny magentowy przy wschodzie, „wypala się” do pastelowego przy zachodzie */
+  @property --left { syntax: '<number>'; inherits: true; initial-value: 1; }
+  .row.on { transition: background-color .2s ease, --left 1s linear; }
+  .row.on::before { content: ""; z-index: 2; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; border-radius: 2px;
+    background: linear-gradient(to top, var(--live) calc(var(--left, 1) * 100%), color-mix(in srgb, var(--live) 28%, var(--paper)) calc(var(--left, 1) * 100%)); }
   /* etykieta emisji: jasna dla nadchodzących przelotów, ciemna dla satelity nad horyzontem */
   .mode { font-size: 11.5px; font-weight: 650; color: var(--muted); background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 0 5px; justify-self: start; line-height: 1.6;
           transition: color .5s ease, background-color .5s ease, border-color .5s ease; }
@@ -225,7 +229,7 @@
         "info info info";
       row-gap: 2px; padding: 10px 8px 10px 12px;
     }
-    .row .mode { grid-area: mode; align-self: center; }
+    .row .mode { grid-area: mode; align-self: start; margin-top: 1px; }   /* wyrównanie do pierwszej linii nazwy, także gdy pod nią jest pozycja na żywo */
     .row .name { grid-area: name; }
     .row .eta  { grid-area: eta; }
     .row .start, .row .dur, .row .el, .row .az { grid-area: info; }
@@ -1104,7 +1108,11 @@ function draw() {
 // co sekundę: odliczanie „za …”; jeśli przelot się zaczął albo skończył – odśwież listę
 function updateEtas(now) {
   for (const e of rowEls.values()) {
-    if (now >= e.p.start) continue;
+    if (now >= e.p.start) {   // pasek postępu: ile przelotu jeszcze zostało (1 → 0)
+      const left = Math.max(0, Math.min(1, (e.p.end - now) / (e.p.end - e.p.start)));
+      e.row.style.setProperty('--left', left.toFixed(4));
+      continue;
+    }
     const el = e.row.querySelector('.eta');
     const txt = `${T('in')} ${etaShort(e.p.start - now)}`;
     if (el && el.textContent !== txt) el.textContent = txt;
