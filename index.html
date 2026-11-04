@@ -21,6 +21,7 @@
     --muted:   #5b6d71;
     --rule:    #cbd5d2;
     --track:   #1d5c8f;
+    --plot:    #dab7c9;   /* próba: kolor toru przelotu na wykresie */
     --live:    #a6206a;
     --live-bg: #f6e3ec;
     --hover:   #e4eae7;
@@ -36,6 +37,7 @@
       --muted:   #8a9da0;
       --rule:    #2d3c42;
       --track:   #7ab5e6;
+      --plot:    #dab7c9;
       --live:    #ef72b2;
       --live-bg: #33202b;
       --hover:   #1d2b32;
@@ -166,9 +168,9 @@
   svg.polar .horizon { fill: none; stroke: var(--muted); stroke-width: 1.2; }
   svg.polar .card { fill: var(--ink); font-size: 12px; font-weight: 700; font-variation-settings: "MONO" 0; }
   svg.polar .ring { font-size: 8.5px; }
-  svg.polar .track { fill: none; stroke: var(--track); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-  svg.polar .tick { fill: var(--surface); stroke: var(--track); stroke-width: 1.6; }
-  svg.polar .tlabel { fill: var(--track); font-weight: 600; }
+  svg.polar .track { fill: none; stroke: var(--plot); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  svg.polar .tick { fill: var(--surface); stroke: var(--live); stroke-width: 1.6; }   /* próba: kontur kółek ciemnym fioletem */
+  svg.polar .tlabel { fill: var(--ink); font-weight: 600; }   /* godziny w kolorze tekstu (#172630 w trybie jasnym) */
   svg.polar .halo { fill: var(--live); fill-opacity: .3; stroke: var(--live); stroke-width: 1.2; stroke-opacity: .7; transform-box: fill-box; transform-origin: center; animation: pulse 1.8s cubic-bezier(.2, .6, .3, 1) infinite; }
   @keyframes pulse {
     0%   { transform: scale(.6); opacity: .9; }
