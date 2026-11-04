@@ -53,7 +53,7 @@ Download `index.html` and open it in a browser. Everything works offline once th
 
 ## Credits
 
-Inspired by **sat-predictor** by SQ3SWF ([github.com/olgierd/sat-predictor](https://github.com/olgierd/sat-predictor)), the simple pass list formerly available at sat.sp3yor.net. This project is a new browser-only implementation and does not reuse its code.
+SAT Predictor was written from scratch as a browser-only tool by SQ5WBW, with the help of AI (Claude by Anthropic).
 
 Thanks to CelesTrak, AMSAT, JE9PEL and N2YO for the data that makes this possible.
 
