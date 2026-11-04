@@ -86,7 +86,7 @@
   .list { margin-top: 18px; }
   .cols, .row {
     display: grid;
-    grid-template-columns: 46px minmax(110px, 236px) minmax(64px, 1fr) minmax(58px, 1fr) minmax(84px, 1.2fr) minmax(56px, 1fr) minmax(150px, 1.7fr);
+    grid-template-columns: 46px minmax(110px, 236px) minmax(64px, 1fr) minmax(70px, 1fr) minmax(90px, 1.2fr) minmax(56px, .8fr) minmax(220px, 2fr);
     column-gap: 14px; align-items: baseline;
     padding: 9px 12px;
   }
@@ -106,7 +106,10 @@
     to   { background-color: var(--pulse); }
   }
   .row.on::before { content: ""; z-index: 2; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; border-radius: 2px; background: var(--live); }
-  .mode { font-size: 11.5px; font-weight: 650; color: var(--paper); background: var(--ink); border: 1px solid var(--ink); border-radius: 4px; padding: 0 5px; justify-self: start; line-height: 1.6; }
+  /* etykieta emisji: jasna dla nadchodzących przelotów, ciemna dla satelity nad horyzontem */
+  .mode { font-size: 11.5px; font-weight: 650; color: var(--muted); background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 0 5px; justify-self: start; line-height: 1.6;
+          transition: color .5s ease, background-color .5s ease, border-color .5s ease; }
+  .row.on .mode { color: var(--paper); background: var(--ink); border-color: var(--ink); }
   .name { font-weight: 650; }
   .name .livepos { display: block; font-weight: 600; font-size: 12.5px; color: var(--live); }
   .eta.on { color: var(--live); font-weight: 650; }
@@ -129,7 +132,7 @@
   .reveal #satlist { opacity: 0; transition: opacity .22s ease; }
   .reveal.open #satlist { opacity: 1; transition-delay: .05s; }
   @media (prefers-reduced-motion: reduce) {
-    .det, .det-in, .reveal, .reveal #satlist, .row, .row::after { transition: none !important; }
+    .det, .det-in, .reveal, .reveal #satlist, .row, .row::after, .mode { transition: none !important; }
     .row.on[aria-expanded="false"] { animation: none; background-color: var(--pulse); }
     svg.polar .halo { animation: none; }
   }
@@ -991,9 +994,11 @@ function makeEntry(p, id) {
 
 function renderRow(e, now) {
   const on = now >= e.p.start;
-  e.row.classList.toggle('on', on);
+  const turningOn = e.row._on === false && on;   // przelot właśnie się zaczął – etykieta płynnie ciemnieje
+  if (!turningOn) e.row.classList.toggle('on', on);
   e.row.innerHTML = rowHTML(e.p, now);
   placeEta(e.row);
+  if (turningOn) { void e.row.offsetWidth; e.row.classList.add('on'); }
   e.row._on = on; e.row._lang = lang; e.row._narrow = isNarrow();
 }
 
