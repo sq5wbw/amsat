@@ -23,10 +23,12 @@
     --rule:    #cbd5d2;
     --track:   #1d5c8f;
     --plot:    #dab7c9;   /* próba: kolor toru przelotu na wykresie */
+    --tick:    #a6206a;
     --live:    #a6206a;
     --live-bg: #f6e3ec;
     --hover:   #e4eae7;
     --pulse:   #ffffff;
+    --pastel:  #dab7c9;   /* „niewypełniona” część suwaka i paska postępu */
     --sans: "Recursive", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
   /* tryb ciemny: z systemu (gdy użytkownik nie wybrał inaczej) albo wymuszony przyciskiem słońce/księżyc */
@@ -39,11 +41,13 @@
       --muted:   #7c8d90;
       --rule:    #2d3c42;
       --track:   #7ab5e6;
-      --plot:    #dab7c9;
+      --plot:    #55666c;   /* tor przelotu w trybie ciemnym: stonowana szarość zamiast jasnego fioletu */
+      --tick:    #7a8b91;
       --live:    #a6206a;
-      --live-bg: #33202b;
+      --live-bg: #1c282e;   /* w trybie ciemnym neutralne tło komunikatów */
       --hover:   #1d2b32;
       --pulse:   #2a3b42;
+      --pastel:  #3b4b52;   /* w trybie ciemnym ciemnoszary zamiast przygaszonego fioletu */
     }
   }
   :root[data-theme="dark"] {
@@ -54,11 +58,13 @@
     --muted:   #7c8d90;
     --rule:    #2d3c42;
     --track:   #7ab5e6;
-    --plot:    #dab7c9;
+    --plot:    #55666c;
+    --tick:    #7a8b91;
     --live:    #a6206a;
-    --live-bg: #33202b;
+    --live-bg: #1c282e;   /* w trybie ciemnym neutralne tło komunikatów */
     --hover:   #1d2b32;
     --pulse:   #2a3b42;
+      --pastel:  #3b4b52;   /* w trybie ciemnym ciemnoszary zamiast przygaszonego fioletu */
   }
   /* płynne przejście kolorów przy przełączaniu motywu */
   html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after { transition: background-color .35s ease, color .35s ease, border-color .35s ease, fill .35s ease, stroke .35s ease !important; }
@@ -97,9 +103,9 @@
   #minel { -webkit-appearance: none; appearance: none; width: 224px; height: 26px; margin: 0; background: transparent; cursor: pointer; touch-action: pan-y; --pct: 0%; }
   #minel:focus-visible { outline: none; }
   #minel::-webkit-slider-runnable-track { height: 4px; border-radius: 999px; transition: height .25s cubic-bezier(.2, .7, .2, 1);
-    background: linear-gradient(to right, var(--live) var(--pct), color-mix(in srgb, var(--live) 28%, var(--paper)) var(--pct)); }
+    background: linear-gradient(to right, var(--live) var(--pct), var(--pastel) var(--pct)); }
   #minel::-moz-range-track { height: 4px; border-radius: 999px; transition: height .25s cubic-bezier(.2, .7, .2, 1);
-    background: linear-gradient(to right, var(--live) var(--pct), color-mix(in srgb, var(--live) 28%, var(--paper)) var(--pct)); }
+    background: linear-gradient(to right, var(--live) var(--pct), var(--pastel) var(--pct)); }
   #minel::-moz-range-progress { background: transparent; }
   #minel::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 14px; height: 26px; margin-top: -11px; background: transparent; border: 0; box-shadow: none; }
   #minel::-moz-range-thumb { width: 14px; height: 26px; background: transparent; border: 0; box-shadow: none; }
@@ -125,7 +131,7 @@
   .seg button { border: 0; background: none; padding: 6px 13px; cursor: pointer; color: var(--muted); font-weight: 600; font-size: 13px; }
   .seg button + button { border-left: 1px solid var(--rule); }
   .seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
-  .seg button:hover:not([aria-pressed="true"]) { color: var(--ink); }
+  @media (hover: hover) { .seg button:hover:not([aria-pressed="true"]) { color: var(--ink); } }
   .tog { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
   .tog label { cursor: pointer; }
   /* przełącznik: stały rozmiar, gałka przesuwa się w prawo po włączeniu */
@@ -162,7 +168,7 @@
   @property --left { syntax: '<number>'; inherits: true; initial-value: 1; }
   .row.on { transition: background-color .2s ease, --left 1s linear; }
   .row.on::before { content: ""; z-index: 2; position: absolute; left: 0; top: 6px; bottom: 6px; width: 4px; border-radius: 999px;
-    background: linear-gradient(to top, var(--live) calc(var(--left, 1) * 100%), color-mix(in srgb, var(--live) 28%, var(--paper)) calc(var(--left, 1) * 100%)); }
+    background: linear-gradient(to top, var(--live) calc(var(--left, 1) * 100%), var(--pastel) calc(var(--left, 1) * 100%)); }
   /* etykieta emisji: jasna dla nadchodzących przelotów, ciemna dla satelity nad horyzontem */
   .mode { font-size: 11.5px; font-weight: 650; color: var(--muted); background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 0 5px; justify-self: start; line-height: 1.6;
           transition: color .5s ease, background-color .5s ease, border-color .5s ease; }
@@ -224,7 +230,7 @@
   svg.polar .card { fill: var(--ink); font-size: 12px; font-weight: 700; font-variation-settings: "MONO" 0; }
   svg.polar .ring { font-size: 8.5px; }
   svg.polar .track { fill: none; stroke: var(--plot); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-  svg.polar .tick { fill: var(--surface); stroke: var(--live); stroke-width: 1.6; }   /* próba: kontur kółek ciemnym fioletem */
+  svg.polar .tick { fill: var(--surface); stroke: var(--tick); stroke-width: 1.6; }   /* kontur kółek AOS / Max / LOS */
   svg.polar .tlabel { fill: var(--ink); font-weight: 600; }   /* godziny w kolorze tekstu (#172630 w trybie jasnym) */
   svg.polar .halo { fill: var(--live); fill-opacity: .3; stroke: var(--live); stroke-width: 1.2; stroke-opacity: .7; transform-box: fill-box; transform-origin: center; animation: pulse 1.8s cubic-bezier(.2, .6, .3, 1) infinite; }
   @keyframes pulse {
