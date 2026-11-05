@@ -69,8 +69,26 @@
     --pulse:   #1d2b32;   /* jak tło rozwiniętego wiersza */
       --pastel:  #3b4b52;   /* w trybie ciemnym ciemnoszary zamiast przygaszonego fioletu */
   }
-  /* płynne przejście kolorów przy przełączaniu motywu */
-  html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after { transition: background-color .35s ease, color .35s ease, border-color .35s ease, fill .35s ease, stroke .35s ease !important; }
+  /* płynne przejście motywu: kolory są zarejestrowanymi zmiennymi, więc przechodzą płynnie
+     wszędzie naraz – w tekstach, tłach, gradientach suwaka i paska postępu, w SVG i w animacjach */
+  @property --paper { syntax: '<color>'; inherits: true; initial-value: transparent; }
+  @property --surface { syntax: '<color>'; inherits: true; initial-value: transparent; }
+  @property --ink { syntax: '<color>'; inherits: true; initial-value: transparent; }
+  @property --muted { syntax: '<color>'; inherits: true; initial-value: transparent; }
+  @property --rule { syntax: '<color>'; inherits: true; initial-value: transparent; }
+  @property --track { syntax: '<color>'; inherits: true; initial-value: transparent; }
+  @property --plot { syntax: '<color>'; inherits: true; initial-value: transparent; }
+  @property --tick { syntax: '<color>'; inherits: true; initial-value: transparent; }
+  @property --horizon { syntax: '<color>'; inherits: true; initial-value: transparent; }
+  @property --live { syntax: '<color>'; inherits: true; initial-value: transparent; }
+  @property --live-bg { syntax: '<color>'; inherits: true; initial-value: transparent; }
+  @property --hover { syntax: '<color>'; inherits: true; initial-value: transparent; }
+  @property --pulse { syntax: '<color>'; inherits: true; initial-value: transparent; }
+  @property --pastel { syntax: '<color>'; inherits: true; initial-value: transparent; }
+  html.theme-anim { transition: --paper .6s cubic-bezier(.4, 0, .2, 1), --surface .6s cubic-bezier(.4, 0, .2, 1), --ink .6s cubic-bezier(.4, 0, .2, 1), --muted .6s cubic-bezier(.4, 0, .2, 1), --rule .6s cubic-bezier(.4, 0, .2, 1), --track .6s cubic-bezier(.4, 0, .2, 1), --plot .6s cubic-bezier(.4, 0, .2, 1), --tick .6s cubic-bezier(.4, 0, .2, 1), --horizon .6s cubic-bezier(.4, 0, .2, 1), --live .6s cubic-bezier(.4, 0, .2, 1), --live-bg .6s cubic-bezier(.4, 0, .2, 1), --hover .6s cubic-bezier(.4, 0, .2, 1), --pulse .6s cubic-bezier(.4, 0, .2, 1), --pastel .6s cubic-bezier(.4, 0, .2, 1); }
+  /* w trakcie zmiany motywu elementy nie dokładają własnych przejść kolorów (inaczej „gonią” zmienne i zostają w tyle) */
+  html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after { transition-property: none !important; }
+  html.theme-anim .theme .ic-half { transition-property: transform !important; }   /* obrót ikony ◐ zostaje */
 
   *, *::before, *::after { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }   /* bez niebieskiego „podświetlenia stuknięcia” na Androidzie – aplikacja ma własne reakcje na dotyk */
@@ -1441,7 +1459,7 @@ function syncThemeUI() {
 }
 function setTheme(th) {
   const html = document.documentElement;
-  if (!reduceMotion()) { html.classList.add('theme-anim'); clearTimeout(setTheme._t); setTheme._t = setTimeout(() => html.classList.remove('theme-anim'), 400); }
+  if (!reduceMotion()) { html.classList.add('theme-anim'); clearTimeout(setTheme._t); setTheme._t = setTimeout(() => html.classList.remove('theme-anim'), 700); }
   html.dataset.theme = th;
   store.set('theme', th);
   syncThemeUI();
