@@ -1181,7 +1181,7 @@ function nameFrame(ts) {
 // Gdy napis wyższego planu zbliża się do niższego, niższy stopniowo wygasa (0 przy zetknięciu, pełny przy odstępie ≥ FADE px).
 // dwa stany zamiast półprzezroczystości: napis znika przy zbliżeniu < HIDE px, wraca dopiero przy odstępie > SHOW px
 // (histereza – nic nie miga na granicy i nic nie wisi długo „w połowie”)
-const HIDE = 2, SHOW = 6;
+const HIDE = 2, SHOW = 3;   // wraca od razu, gdy tylko kolizji już nie ma (1 px zapasu chroni przed miganiem)
 function rectGap(a, b) {
   const dx = Math.max(0, Math.max(a.left, b.left) - Math.min(a.right, b.right));
   const dy = Math.max(0, Math.max(a.top, b.top) - Math.min(a.bottom, b.bottom));
@@ -1196,10 +1196,11 @@ function resolveCollisions(svg) {
   if (!svg || svg.closest('.det:not(.open)')) return;
   const sat = svg.querySelector('.satpos:not([hidden]) .satname');
   const times = [...svg.querySelectorAll('.tlabel')], rings = [...svg.querySelectorAll('.ring, .card')];
-  const R = el => el.getBoundingClientRect();
+  // prostokąt tekstu przycięty do samych znaków (bez pustego miejsca na wysokość linii), żeby odstęp był „wizualny”
+  const R = el => { const r = el.getBoundingClientRect(), k = r.height * 0.2; return { left: r.left, right: r.right, top: r.top + k, bottom: r.bottom - k }; };
   const dot = svg.querySelector('.satpos:not([hidden]) .satdot');
   const grow = (r, k) => ({ left: r.left - k, right: r.right + k, top: r.top - k, bottom: r.bottom + k });
-  const satR = (sat && sat.textContent ? [R(sat)] : []).concat(dot ? [grow(R(dot), 4)] : []);   // plan 1: nazwa i kropka satelity (z zapasem na poświatę)
+  const satR = (sat && sat.textContent ? [R(sat)] : []).concat(dot ? [grow(dot.getBoundingClientRect(), 1.5)] : []);   // plan 1: nazwa i kropka satelity (z zapasem na poświatę)
   const minGap = (rect, above) => above.reduce((g, r) => Math.min(g, rectGap(rect, r)), Infinity);
   const timeR = times.map(R);
   // godziny między sobą: AOS > LOS > Max (krótkie, niskie przeloty – wszystkie trzy w jednym miejscu)
