@@ -945,12 +945,16 @@ function setupPlotRotation() {
     if (!onDial(svg, e.clientX, e.clientY)) return;  // pole wokół tarczy nie obraca
     e.preventDefault();
     cancelAnimationFrame(rotTween); rotTween = 0;
-    drag = { svg, a0: angleOf(svg, e), r0: manualRot, c0: compassCorr, id: e.pointerId };
+    drag = { svg, a0: angleOf(svg, e), r0: manualRot, c0: compassCorr, id: e.pointerId, x0: e.clientX, y0: e.clientY, t0: performance.now(), active: false, type: e.pointerType };
     svg.classList.add('dragging');
     try { svg.setPointerCapture(e.pointerId); } catch (err) {}
   });
   document.addEventListener('pointermove', e => {
     if (!drag || e.pointerId !== drag.id) return;
+    if (!drag.active) {                       // próg: drobne drgnięcie palca przy stuknięciu nie obraca tarczy
+      if (Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) < 8) return;
+      drag.active = true;
+    }
     const delta = angleOf(drag.svg, e) - drag.a0;
     {
       let r = norm(drag.r0 + delta);
@@ -958,20 +962,27 @@ function setupPlotRotation() {
       if (r !== manualRot) { manualRot = r; applyRot(); }
     }
   });
+  const resetNorth = () => { manualRot = 0; store.set('plot_rot', '0'); animateRotTo(0); };   // płynny powrót północy na górę
+  let lastTap = { t: 0, x: 0, y: 0 };
   const end = e => {
     if (!drag || e.pointerId !== drag.id) return;
-    drag.svg.classList.remove('dragging');
+    const d = drag;
+    d.svg.classList.remove('dragging');
     drag = null;
     store.set('plot_rot', String(manualRot));
+    // podwójne stuknięcie palcem (na telefonie przeglądarka nie wyśle dblclick, bo blokujemy przewijanie na tarczy)
+    if (e.type === 'pointerup' && d.type !== 'mouse' && !d.active && performance.now() - d.t0 < 300) {
+      const now = performance.now();
+      if (now - lastTap.t < 350 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30) { lastTap.t = 0; resetNorth(); }
+      else lastTap = { t: now, x: e.clientX, y: e.clientY };
+    }
   };
   document.addEventListener('pointerup', end);
   document.addEventListener('pointercancel', end);
   document.addEventListener('dblclick', e => {
     const svgD = e.target.closest && e.target.closest('svg.polar');
     if (compassOn || !svgD || !onDial(svgD, e.clientX, e.clientY)) return;
-    // płynny powrót północy na górę
-    manualRot = 0; store.set('plot_rot', '0');
-    animateRotTo(0);
+    resetNorth();
   });
   setupCompass();
 }
