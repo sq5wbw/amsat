@@ -89,12 +89,12 @@
     #minel:hover::-moz-range-track { height: 8px; }
     #minel:hover::-webkit-slider-thumb { margin-top: -9px; }
   }
-  #minel:active::-webkit-slider-runnable-track, #minel:focus-visible::-webkit-slider-runnable-track { height: 8px; }
-  #minel:active::-moz-range-track, #minel:focus-visible::-moz-range-track { height: 8px; }
-  #minel:active::-webkit-slider-thumb, #minel:focus-visible::-webkit-slider-thumb { margin-top: -9px; }
+  #minel.held::-webkit-slider-runnable-track, #minel:focus-visible::-webkit-slider-runnable-track { height: 8px; }
+  #minel.held::-moz-range-track, #minel:focus-visible::-moz-range-track { height: 8px; }
+  #minel.held::-webkit-slider-thumb, #minel:focus-visible::-webkit-slider-thumb { margin-top: -9px; }
   /* „pokaż kolejne” pod listą */
   .more { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 18px; }
-  .morebtn { border: 1px solid var(--live); background: var(--live); border-radius: 4px; padding: 8px 18px; cursor: pointer; color: #fff; font-weight: 650; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; transition: background-color .15s ease, border-color .15s ease; }
+  .morebtn { border: 1px solid var(--live); background: var(--live); border-radius: 999px; padding: 9px 22px; cursor: pointer; color: #fff; font-weight: 650; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; transition: background-color .15s ease, border-color .15s ease; }
   @media (hover: hover) { .morebtn:hover { background: color-mix(in srgb, var(--live) 85%, #000); border-color: color-mix(in srgb, var(--live) 85%, #000); } }
   .seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; background: var(--surface); }
   .seg button { border: 0; background: none; padding: 6px 13px; cursor: pointer; color: var(--muted); font-weight: 600; font-size: 13px; }
@@ -254,7 +254,7 @@
     .controls { grid-column: 1 / -1; width: 100%; }
     .elrow { order: 3; width: 100%; }          /* telefon: suwak na całą szerokość, pod filtrami */
     #minel { flex: 1; width: auto; }
-    .morebtn { width: 100%; padding: 10px 16px; }
+    .morebtn { padding: 11px 24px; }
     #compasswrap { margin-left: auto; }
     .cols { display: none; }
     .row {
@@ -1345,6 +1345,12 @@ async function loadTLE(force) {
   const savedEl = parseInt(store.get('min_el'), 10);
   if (savedEl >= 0 && savedEl <= 45) minEl = savedEl;
   setSliderUI();
+  // pasek gruby przez cały czas trzymania palca/myszy (przeglądarki dotykowe gubią :active przy ruchu)
+  const hold = on => sl.classList.toggle('held', on);
+  sl.addEventListener('pointerdown', () => hold(true));
+  sl.addEventListener('touchstart', () => hold(true), { passive: true });
+  for (const ev of ['pointerup', 'pointercancel', 'touchend', 'touchcancel']) window.addEventListener(ev, () => hold(false), { passive: true });
+  sl.addEventListener('blur', () => hold(false));
   let elTimer = 0;
   sl.addEventListener('input', () => {
     minEl = +sl.value; setSliderUI();
