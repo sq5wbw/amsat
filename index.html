@@ -97,8 +97,8 @@
   .more { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 18px; }
   .morebtn { border: 1px solid var(--live); background: var(--live); border-radius: 4px; padding: 8px 18px; cursor: pointer; color: #fff; font-weight: 650; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; transition: background-color .15s ease, border-color .15s ease; }
   /* licznik w przycisku: co kilka sekund „nalicza się” od 1 – każda cyfra wjeżdża z góry i wygasa w dół */
-  .morebtn { display: inline-flex; align-items: center; justify-content: center; gap: .55em; line-height: 1.5; }
-  .mb-label { line-height: 1.5em; }
+  .morebtn { display: inline-flex; align-items: center; justify-content: center; gap: .4em; line-height: 1.5; }
+  .mb-label, .mb-unit { line-height: 1.5em; }
   .mb-num { display: inline-flex; letter-spacing: 0; line-height: 1.5em; }   /* ta sama wysokość linii co napis obok – cyfry stoją równo z literami */
   .mb-d { position: relative; display: block; overflow: hidden; width: 1ch; height: 1.5em; line-height: 1.5em; }   /* jedno okienko na cyfrę, jak w liczniku mechanicznym */
   .mb-d > span { position: absolute; left: 0; top: 0; width: 1ch; text-align: center; }
@@ -318,7 +318,7 @@
 </header>
 
 <main class="list" id="list"><p class="empty" data-i18n="computing">Liczę przeloty…</p></main>
-<div class="more" id="more" hidden><button id="morebtn" class="morebtn"><span class="mb-label"></span><span class="mb-num num" aria-hidden="true"><span class="mb-d"><span>1</span></span><span class="mb-d"><span>0</span></span></span></button></div>
+<div class="more" id="more" hidden><button id="morebtn" class="morebtn"><span class="mb-label"></span><span class="mb-num num" aria-hidden="true"><span class="mb-d"><span>1</span></span><span class="mb-d"><span>0</span></span></span><span class="mb-unit"></span></button></div>
 
 <footer class="data">
   <div id="tleinfo"></div>
@@ -566,6 +566,8 @@ function buildPass(sat, satrec, start, end) {
 
 
 // ---------- tłumaczenia (PL / EN) ----------
+// polska odmiana: 1 przelot, 2–4 przeloty, 5+ przelotów (12–14 przelotów)
+const plPasses = n => n === 1 ? 'przelot' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 'przeloty' : 'przelotów';
 const I18N = {
   pl: {
     gridTitle: 'Zmień lokator', modes: 'Rodzaj emisji', compass: 'Kompas:', compassAria: 'Kompas telefonu',
@@ -593,7 +595,7 @@ const I18N = {
     noPerm: 'Brak zgody na dostęp do kompasu.', compassFail: 'Nie udało się włączyć kompasu.',
     noData: 'Telefon nie przesyła danych z kompasu. Sprawdź uprawnienia przeglądarki do czujników ruchu.',
     langGroup: 'Język', locale: 'pl-PL',
-    minEl: 'Min. el.', minElAria: 'Minimalna elewacja przelotu', showMore: n => `Pokaż kolejne ${n}`, showMoreLbl: 'Pokaż kolejne', shownOf: (a, b) => `${a} z ${b}`,
+    minEl: 'Min. el.', minElAria: 'Minimalna elewacja przelotu', showMore: n => `Pokaż kolejne ${n} ${plPasses(n)}`, showMoreLbl: 'Pokaż kolejne', passUnit: n => plPasses(n), shownOf: (a, b) => `${a} z ${b}`,
   },
   en: {
     gridTitle: 'Change grid locator', modes: 'Mode', compass: 'Compass:', compassAria: 'Phone compass',
@@ -621,7 +623,7 @@ const I18N = {
     noPerm: 'Compass access was not allowed.', compassFail: 'Could not turn on the compass.',
     noData: 'The phone is not sending compass data. Check the browser’s motion sensor permissions.',
     langGroup: 'Language', locale: 'en-GB',
-    minEl: 'Min. el.', minElAria: 'Minimum pass elevation', showMore: n => `Show next ${n}`, showMoreLbl: 'Show next', shownOf: (a, b) => `${a} of ${b}`,
+    minEl: 'Min. el.', minElAria: 'Minimum pass elevation', showMore: n => `Show next ${n} ${n === 1 ? 'pass' : 'passes'}`, showMoreLbl: 'Show next', passUnit: n => n === 1 ? 'pass' : 'passes', shownOf: (a, b) => `${a} of ${b}`,
   },
 };
 // uwagi i opisy z listy satelitów po angielsku
@@ -1230,6 +1232,7 @@ function updateMore(total, visible) {
   if (left > 0) {
     const n = Math.min(pageStep(), left), btn = $('morebtn');
     btn.querySelector('.mb-label').textContent = T('showMoreLbl');
+    btn.querySelector('.mb-unit').textContent = T('passUnit')(n);
     btn.setAttribute('aria-label', T('showMore')(n));
     if (btn._n !== n) { btn._n = n; setMoreNum(n); }
   }
