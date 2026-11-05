@@ -193,9 +193,10 @@
   figure.plot { margin: 0; }
   .plotcap { text-align: center; color: var(--muted); font-size: 12.5px; min-height: 1.4em; margin-top: 2px; font-variation-settings: "MONO" 1; }
   .plotcap:empty { visibility: hidden; }
-  svg.polar { width: 100%; max-width: 320px; height: auto; display: block; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; margin: 0 auto; }
-  svg.polar.dragging { cursor: grabbing; }
-  body.compass-on svg.polar { touch-action: auto; cursor: default; }
+  svg.polar { width: 100%; max-width: 320px; height: auto; display: block; touch-action: pan-y pinch-zoom; user-select: none; -webkit-user-select: none; margin: 0 auto; }
+  svg.polar .hit { cursor: grab; }   /* obracać można tylko tarczę, pole wokół przewija stronę */
+  svg.polar.dragging, svg.polar.dragging .hit { cursor: grabbing; }
+  body.compass-on svg.polar .hit { cursor: default; }
   svg.polar text { font-family: var(--sans); font-variation-settings: "MONO" 1; font-size: 10px; fill: var(--muted); }
   svg.polar .disc { fill: var(--paper); }
   /* grubość linii w pikselach ekranu, niezależnie od rozmiaru wykresu (telefon = komputer) */
@@ -756,7 +757,7 @@ function polarInner(p) {
   // tekst obracany „pod prąd”, żeby zawsze był poziomy
   const cr = (x, y) => ` data-cx="${f(x)}" data-cy="${f(y)}" transform="rotate(${f(-plotRot)} ${f(x)} ${f(y)})"`;
   let s = `<title>${compassOn ? T('plotTipCompass') : T('plotTip')}</title>`;
-  s += `<circle cx="${PC}" cy="${PC}" r="${PR + 20}" fill="transparent"/>`;
+  s += `<circle class="hit" cx="${PC}" cy="${PC}" r="${PR + 14}" fill="transparent"/>`;
   s += `<g class="rot" transform="rotate(${f(plotRot)} ${PC} ${PC})">`;
   s += `<circle class="disc" cx="${PC}" cy="${PC}" r="${PR}"/>`;
   for (const el of [30, 60]) s += `<circle class="grid" cx="${PC}" cy="${PC}" r="${f(PR * (90 - el) / 90)}"/>`;
@@ -926,9 +927,22 @@ function setupPlotRotation() {
     const cx = b.left + (PC - vb.x) / vb.width * b.width, cy = b.top + (PC - vb.y) / vb.height * b.height;
     return Math.atan2(e.clientX - cx, cy - e.clientY) * 180 / Math.PI;
   };
+  // czy punkt leży na tarczy kompasu (z małym marginesem na litery N/E/S/W)
+  const onDial = (svg, x, y) => {
+    const b = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal, s = b.width / vb.width;
+    const cx = b.left + (PC - vb.x) * s, cy = b.top + (PC - vb.y) * s;
+    return Math.hypot(x - cx, y - cy) <= (PR + 14) * s;
+  };
+  // dotyk na tarczy obraca kompas zamiast przewijać stronę; poza tarczą strona przewija się normalnie
+  document.addEventListener('touchstart', e => {
+    const svg = e.target.closest && e.target.closest('svg.polar');
+    if (!svg || compassOn || e.touches.length !== 1) return;
+    if (onDial(svg, e.touches[0].clientX, e.touches[0].clientY)) e.preventDefault();
+  }, { passive: false });
   document.addEventListener('pointerdown', e => {
     const svg = e.target.closest && e.target.closest('svg.polar');
     if (!svg || e.button > 0 || compassOn) return;   // przy włączonym kompasie wykres tylko podąża za telefonem
+    if (!onDial(svg, e.clientX, e.clientY)) return;  // pole wokół tarczy nie obraca
     e.preventDefault();
     cancelAnimationFrame(rotTween); rotTween = 0;
     drag = { svg, a0: angleOf(svg, e), r0: manualRot, c0: compassCorr, id: e.pointerId };
@@ -953,7 +967,8 @@ function setupPlotRotation() {
   document.addEventListener('pointerup', end);
   document.addEventListener('pointercancel', end);
   document.addEventListener('dblclick', e => {
-    if (compassOn || !(e.target.closest && e.target.closest('svg.polar'))) return;
+    const svgD = e.target.closest && e.target.closest('svg.polar');
+    if (compassOn || !svgD || !onDial(svgD, e.clientX, e.clientY)) return;
     // płynny powrót północy na górę
     manualRot = 0; store.set('plot_rot', '0');
     animateRotTo(0);
