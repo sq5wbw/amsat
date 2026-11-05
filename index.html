@@ -242,11 +242,9 @@
 
   /* ---------- wykres nieba ---------- */
   figure.plot { margin: 0; }
-  /* podpis pod tarczą („Rotation: 45°”): stała wysokość, więc nic się nie przesuwa; pojawia się i znika płynnie */
-  .plotcap { text-align: center; color: var(--muted); font-size: 12.5px; height: 1.5em; line-height: 1.5em; margin-top: 2px; font-variation-settings: "MONO" 1;
-    opacity: 0; transform: translateY(-2px); transition: opacity .3s ease, transform .3s ease; }
-  .plotcap.show { opacity: 1; transform: none; }
-  .plotcap .capv { display: inline-block; min-width: 4ch; text-align: left; }
+  /* podpis w prawym górnym rogu wykresu („Rotation: 96°”) – pojawia się i znika płynnie */
+  svg.polar .rotcap { opacity: 0; transition: opacity .3s ease; }
+  svg.polar .rotcap.show { opacity: 1; }
   svg.polar { width: 100%; max-width: 320px; height: auto; display: block; touch-action: pan-y pinch-zoom; user-select: none; -webkit-user-select: none; margin: 0 auto; }
   svg.polar .hit { cursor: grab; }   /* obracać można tylko tarczę, pole wokół przewija stronę */
   svg.polar.dragging, svg.polar.dragging .hit { cursor: grabbing; }
@@ -790,7 +788,7 @@ function detailsHTML(p) {
       row(T('down'), TD(s.down), 'num') + row(T('up'), TD(s.up), 'num') + row(T('beacon'), TD(s.beacon), 'num') +
       row(T('type'), TD(s.type || s.mode)) + (s.note ? row(T('note'), TD(s.note), 'note') : '') +
     `</dl>` +
-    `</div><figure class="plot">${polarSVG(p)}<figcaption class="plotcap${rotLabel() ? ' show' : ''}">${capHTML(rotLabel())}</figcaption></figure></div>` +
+    `</div><figure class="plot">${polarSVG(p)}</figure></div>` +
     `<div class="tle">TLE: ${esc(r ? r.tleName || '-' : '-')}, <a href="https://www.n2yo.com/satellite/?s=${s.norad}#results" target="_blank" rel="noopener" title="${T('n2yo')}">NORAD ${s.norad}</a>, ${T('age')} ${age} d</div>`;
 }
 
@@ -860,6 +858,10 @@ function polarInner(p) {
   s += `</g>`;
   const v = plotBox(), L = v.x + 4, R = v.x + v.w - 4, B = v.y + v.h - 6;
   s += `<text class="info" data-k="azel" x="${L}" y="${B}"></text><text class="info" data-k="los" x="${R}" y="${B}" text-anchor="end"></text>`;
+  // prawy górny róg: „Rotation: 96°” / „Declination: +7°” – etykieta i liczba osobno, więc 99° → 100° nic nie przesuwa
+  const cap = capParts(rotLabel());
+  s += `<g class="rotcap${cap.on ? ' show' : ''}"><text class="info" data-k="caplbl" x="${R - 27}" y="${v.y + 12.3}" text-anchor="end">${esc(cap.lbl)}</text>` +
+       `<text class="info" data-k="capval" x="${R}" y="${v.y + 12.3}" text-anchor="end">${esc(cap.val)}</text></g>`;
   return s;
 }
 // szybki obrót wszystkich wykresów: tylko atrybuty transform, bez przebudowy SVG (płynne 60 fps)
@@ -875,9 +877,14 @@ function setPlotRotation() {
 }
 function updateCaptions() {
   const rl = rotLabel(), tip = compassOn ? T('plotTipCompass') : T('plotTip');
-  for (const c of document.querySelectorAll('.plotcap')) {
-    if (rl && c._rl !== rl) { c.innerHTML = capHTML(rl); c._rl = rl; }   // pusty napis: zostaw stary tekst, żeby mógł płynnie zgasnąć
-    c.classList.toggle('show', !!rl);
+  const cp = capParts(rl);
+  for (const g of document.querySelectorAll('svg.polar g.rotcap')) {
+    if (cp.on) {                               // pusty napis: zostaw stary tekst, żeby mógł płynnie zgasnąć
+      const l = g.querySelector('[data-k=caplbl]'), v = g.querySelector('[data-k=capval]');
+      if (cp.val === cp.lbl + cp.val || !cp.lbl) { l.textContent = ''; v.textContent = cp.val; }
+      else { if (l.textContent !== cp.lbl) l.textContent = cp.lbl; if (v.textContent !== cp.val) v.textContent = cp.val; }
+    }
+    g.classList.toggle('show', cp.on);
   }
   for (const ti of document.querySelectorAll('svg.polar > title')) if (ti.textContent !== tip) ti.textContent = tip;
 }
@@ -980,10 +987,11 @@ function animateRotTo(target, DUR = 600) {
 }
 function startCompassLoop() { cancelAnimationFrame(rotTween); rotTween = 0; if (!compassRaf) { compassLastT = 0; compassStartT = performance.now(); compassRaf = requestAnimationFrame(compassFrame); } }
 function stopCompassLoop() { if (compassRaf) cancelAnimationFrame(compassRaf); compassRaf = 0; }
-// podpis pod tarczą: liczba w polu o stałej szerokości, więc „99°” → „100°” nie przesuwa napisu
-function capHTML(rl) {
+// podpis w rogu wykresu: etykieta + liczba
+function capParts(rl) {
+  if (!rl) return { on: false, lbl: '', val: '' };
   const k = rl.lastIndexOf(': ');
-  return k < 0 ? esc(rl) : `${esc(rl.slice(0, k + 1))} <span class="capv">${esc(rl.slice(k + 2))}</span>`;
+  return k < 0 ? { on: true, lbl: '', val: rl } : { on: true, lbl: '', val: rl.slice(k + 2) };   // w rogu wystarczą same stopnie
 }
 function rotLabel() {
   if (compassOn) {
