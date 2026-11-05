@@ -244,7 +244,7 @@
   figure.plot { margin: 0; }
   /* podpis w prawym górnym rogu wykresu („Rotation: 96°”) – pojawia się i znika płynnie */
   figure.plot { position: relative; }
-  svg.polar { width: 100%; max-width: 320px; height: auto; display: block; touch-action: pan-y pinch-zoom; user-select: none; -webkit-user-select: none; margin: 0 auto; }
+  svg.polar { overflow: visible; width: 100%; max-width: 320px; height: auto; display: block; touch-action: pan-y pinch-zoom; user-select: none; -webkit-user-select: none; margin: 0 auto; }
   svg.polar .hit { cursor: grab; }   /* obracać można tylko tarczę, pole wokół przewija stronę */
   svg.polar.dragging, svg.polar.dragging .hit { cursor: grabbing; }
   body.compass-on svg.polar .hit { cursor: default; }
@@ -1154,7 +1154,10 @@ function placeSatName(svg, g, x, y) {
   const vb = svg.viewBox.baseVal, a = plotRot * Math.PI / 180;
   const sx = PC + (x - PC) * Math.cos(a) - (y - PC) * Math.sin(a);      // pozycja kropki na ekranie (po obrocie)
   const sy = PC + (x - PC) * Math.sin(a) + (y - PC) * Math.cos(a);
-  const pad = 3, minX = vb.x + pad + w / 2, maxX = vb.x + vb.width - pad - w / 2;
+  // granice: cała szerokość kolumny z wykresem (na telefonie od krawędzi do krawędzi panelu), a nie sam obszar rysunku
+  const sb = svg.getBoundingClientRect(), fb = svg.parentElement.getBoundingClientRect(), s = sb.width / vb.width;
+  const leftU = vb.x + (fb.left - sb.left) / s, rightU = vb.x + (fb.right - sb.left) / s;
+  const pad = 0.5, minX = leftU + pad + w / 2, maxX = rightU - pad - w / 2;
   tx._tx = Math.max(minX, Math.min(maxX, sx)) - sx;                     // cel; samo przesunięcie jest animowane
   tx._ty = Math.max(-12, vb.y + pad + 9 - sy);                           // zawsze nad kropką; przy górnej krawędzi tylko płynnie dosuwa się w dół
   if (tx._cx === undefined) { tx._cx = tx._tx; tx._cy = tx._ty; tx.setAttribute('x', tx._cx.toFixed(2)); tx.setAttribute('y', tx._cy.toFixed(2)); }
