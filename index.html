@@ -265,7 +265,7 @@
   svg.polar .ring { font-size: 8.5px; }
   svg.polar .track { fill: none; stroke: var(--plot); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   svg.polar .tick { fill: var(--surface); stroke: var(--tick); stroke-width: 1.6; }   /* kontur kółek AOS / Max / LOS */
-  svg.polar .tlabel, svg.polar .ring, svg.polar .card { transition: opacity .25s ease; }
+  svg.polar .tlabel, svg.polar .ring, svg.polar .card { transition: opacity .3s ease; }
   svg.polar .tlabel { fill: var(--ink); font-weight: 600; }   /* godziny w kolorze tekstu (#172630 w trybie jasnym) */
   svg.polar .halo { fill: var(--live); fill-opacity: .3; stroke: var(--live); stroke-width: 1.2; stroke-opacity: .7; transform-box: fill-box; transform-origin: center; animation: pulse 1.8s cubic-bezier(.2, .6, .3, 1) infinite; }
   @keyframes pulse {
@@ -836,11 +836,13 @@ function polarInner(p) {
   const cr = (x, y) => ` data-cx="${f(x)}" data-cy="${f(y)}" transform="rotate(${f(-plotRot)} ${f(x)} ${f(y)})"`;
   let s = `<title>${compassOn ? T('plotTipCompass') : T('plotTip')}</title>`;
   s += `<circle class="hit" cx="${PC}" cy="${PC}" r="${PR + 14}" fill="transparent"/>`;
-  s += `<g class="rot" transform="rotate(${f(plotRot)} ${PC} ${PC})">`;
+  // okręgi (tarcza, 30°, 60°, horyzont) są symetryczne – rysujemy je POZA obracaną grupą,
+  // więc przy obrocie nie są przerysowywane pod kątem i ich krawędzie zostają idealnie gładkie
   s += `<circle class="disc" cx="${PC}" cy="${PC}" r="${PR}"/>`;
   for (const el of [30, 60]) s += `<circle class="grid" cx="${PC}" cy="${PC}" r="${f(PR * (90 - el) / 90)}"/>`;
-  s += `<line class="grid" x1="${PC}" y1="${PC - PR}" x2="${PC}" y2="${PC + PR}"/><line class="grid" x1="${PC - PR}" y1="${PC}" x2="${PC + PR}" y2="${PC}"/>`;
   s += `<circle class="horizon" cx="${PC}" cy="${PC}" r="${PR}"/>`;
+  s += `<g class="rot" transform="rotate(${f(plotRot)} ${PC} ${PC})">`;
+  s += `<line class="grid" x1="${PC}" y1="${PC - PR}" x2="${PC}" y2="${PC + PR}"/><line class="grid" x1="${PC - PR}" y1="${PC}" x2="${PC + PR}" y2="${PC}"/>`;
   for (const el of [30, 60]) {
     const [x, y] = polarXY(135, el);
     s += `<text class="ring cr" x="${f(x)}" y="${f(y)}" text-anchor="middle" dominant-baseline="central"${cr(x, y)}>${el}°</text>`;
@@ -1168,11 +1170,18 @@ function placeSatName(svg, g, x, y) {
 }
 // kolizje napisów na wykresie: 1. nazwa i kropka satelity, 2. godziny, 3. kierunki N/E/S/W i stopnie (30°, 60°).
 // Gdy napis wyższego planu zbliża się do niższego, niższy stopniowo wygasa (0 przy zetknięciu, pełny przy odstępie ≥ FADE px).
-const FADE = 8;
+// dwa stany zamiast półprzezroczystości: napis znika przy zbliżeniu < HIDE px, wraca dopiero przy odstępie > SHOW px
+// (histereza – nic nie miga na granicy i nic nie wisi długo „w połowie”)
+const HIDE = 4, SHOW = 10;
 function rectGap(a, b) {
   const dx = Math.max(0, Math.max(a.left, b.left) - Math.min(a.right, b.right));
   const dy = Math.max(0, Math.max(a.top, b.top) - Math.min(a.bottom, b.bottom));
   return Math.hypot(dx, dy);
+}
+function setHidden(el, gap) {
+  const hidden = el._hid ? gap <= SHOW : gap < HIDE;
+  if (hidden !== !!el._hid) { el._hid = hidden; el.style.opacity = hidden ? '0' : ''; }
+  return hidden;
 }
 function resolveCollisions(svg) {
   if (!svg || svg.closest('.det:not(.open)')) return;
@@ -1182,13 +1191,12 @@ function resolveCollisions(svg) {
   const dot = svg.querySelector('.satpos:not([hidden]) .satdot');
   const grow = (r, k) => ({ left: r.left - k, right: r.right + k, top: r.top - k, bottom: r.bottom + k });
   const satR = (sat && sat.textContent ? [R(sat)] : []).concat(dot ? [grow(R(dot), 4)] : []);   // plan 1: nazwa i kropka satelity (z zapasem na poświatę)
-  const timeR = times.map(R), ringR = rings.map(R);
-  const vis = (rect, above) => above.reduce((o, r) => Math.min(o, rectGap(rect, r) / FADE), 1);
-  const timeOp = timeR.map(r => Math.min(1, vis(r, satR)));
-  times.forEach((el, i) => { const o = timeOp[i].toFixed(2); if (el.style.opacity !== o) el.style.opacity = o; });
-  // kierunki i stopnie ustępują nazwie satelity i godzinom (tylko tym, które są jeszcze widoczne)
-  const visTimes = timeR.filter((r, i) => timeOp[i] > 0.05);
-  rings.forEach((el, i) => { const o = Math.min(1, vis(ringR[i], satR.concat(visTimes))).toFixed(2); if (el.style.opacity !== o) el.style.opacity = o; });
+  const minGap = (rect, above) => above.reduce((g, r) => Math.min(g, rectGap(rect, r)), Infinity);
+  const timeR = times.map(R);
+  const timeHid = times.map((el, i) => setHidden(el, minGap(timeR[i], satR)));
+  // kierunki i stopnie ustępują nazwie satelity i godzinom (tylko tym, które są widoczne)
+  const visTimes = timeR.filter((r, i) => !timeHid[i]);
+  rings.forEach(el => setHidden(el, minGap(R(el), satR.concat(visTimes))));
 }
 let collideRaf = 0;
 function scheduleCollisions() {
