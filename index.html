@@ -265,6 +265,7 @@
   svg.polar .ring { font-size: 8.5px; }
   svg.polar .track { fill: none; stroke: var(--plot); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
   svg.polar .tick { fill: var(--surface); stroke: var(--tick); stroke-width: 1.6; }   /* kontur kółek AOS / Max / LOS */
+  svg.polar .tlabel, svg.polar .ring { transition: opacity .25s ease; }
   svg.polar .tlabel { fill: var(--ink); font-weight: 600; }   /* godziny w kolorze tekstu (#172630 w trybie jasnym) */
   svg.polar .halo { fill: var(--live); fill-opacity: .3; stroke: var(--live); stroke-width: 1.2; stroke-opacity: .7; transform-box: fill-box; transform-origin: center; animation: pulse 1.8s cubic-bezier(.2, .6, .3, 1) infinite; }
   @keyframes pulse {
@@ -877,6 +878,7 @@ function setPlotRotation() {
     for (const el of svg._cr) el.setAttribute('transform', `rotate(${m} ${el.dataset.cx} ${el.dataset.cy})`);
     if (svg._nm) svg._nm.setAttribute('transform', `rotate(${m})`);
   }
+  scheduleCollisions();
 }
 function updateCaptions() {
   const rl = rotLabel(), tip = compassOn ? T('plotTipCompass') : T('plotTip');
@@ -1164,6 +1166,33 @@ function placeSatName(svg, g, x, y) {
   if (tx.getAttribute('x') !== dx.toFixed(1)) tx.setAttribute('x', dx.toFixed(1));
   if (tx.getAttribute('y') !== String(dy)) tx.setAttribute('y', String(dy));
 }
+// kolizje napisów na wykresie: 1. nazwa satelity, 2. godziny, 3. stopnie (30°, 60°).
+// Gdy napis wyższego planu zbliża się do niższego, niższy stopniowo wygasa (0 przy zetknięciu, pełny przy odstępie ≥ FADE px).
+const FADE = 8;
+function rectGap(a, b) {
+  const dx = Math.max(0, Math.max(a.left, b.left) - Math.min(a.right, b.right));
+  const dy = Math.max(0, Math.max(a.top, b.top) - Math.min(a.bottom, b.bottom));
+  return Math.hypot(dx, dy);
+}
+function resolveCollisions(svg) {
+  if (!svg || svg.closest('.det:not(.open)')) return;
+  const sat = svg.querySelector('.satpos:not([hidden]) .satname');
+  const times = [...svg.querySelectorAll('.tlabel')], rings = [...svg.querySelectorAll('.ring')];
+  const R = el => el.getBoundingClientRect();
+  const satR = sat && sat.textContent ? [R(sat)] : [];
+  const timeR = times.map(R), ringR = rings.map(R);
+  const vis = (rect, above) => above.reduce((o, r) => Math.min(o, rectGap(rect, r) / FADE), 1);
+  const timeOp = timeR.map(r => Math.min(1, vis(r, satR)));
+  times.forEach((el, i) => { const o = timeOp[i].toFixed(2); if (el.style.opacity !== o) el.style.opacity = o; });
+  // stopnie ustępują nazwie satelity i godzinom (tylko tym, które są jeszcze widoczne)
+  const visTimes = timeR.filter((r, i) => timeOp[i] > 0.05);
+  rings.forEach((el, i) => { const o = Math.min(1, vis(ringR[i], satR.concat(visTimes))).toFixed(2); if (el.style.opacity !== o) el.style.opacity = o; });
+}
+let collideRaf = 0;
+function scheduleCollisions() {
+  if (collideRaf) return;
+  collideRaf = requestAnimationFrame(() => { collideRaf = 0; document.querySelectorAll('svg.polar').forEach(resolveCollisions); });
+}
 function updatePlots() {
   const now = Date.now();
   for (const svg of document.querySelectorAll('svg.polar')) {
@@ -1190,6 +1219,7 @@ function updatePlots() {
       } else los.textContent = '';
     }
   }
+  scheduleCollisions();
 }
 
 
