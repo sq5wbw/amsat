@@ -246,6 +246,7 @@
   .plotcap { text-align: center; color: var(--muted); font-size: 12.5px; height: 1.5em; line-height: 1.5em; margin-top: 2px; font-variation-settings: "MONO" 1;
     opacity: 0; transform: translateY(-2px); transition: opacity .3s ease, transform .3s ease; }
   .plotcap.show { opacity: 1; transform: none; }
+  .plotcap .capv { display: inline-block; min-width: 4ch; text-align: left; }
   svg.polar { width: 100%; max-width: 320px; height: auto; display: block; touch-action: pan-y pinch-zoom; user-select: none; -webkit-user-select: none; margin: 0 auto; }
   svg.polar .hit { cursor: grab; }   /* obracać można tylko tarczę, pole wokół przewija stronę */
   svg.polar.dragging, svg.polar.dragging .hit { cursor: grabbing; }
@@ -789,7 +790,7 @@ function detailsHTML(p) {
       row(T('down'), TD(s.down), 'num') + row(T('up'), TD(s.up), 'num') + row(T('beacon'), TD(s.beacon), 'num') +
       row(T('type'), TD(s.type || s.mode)) + (s.note ? row(T('note'), TD(s.note), 'note') : '') +
     `</dl>` +
-    `</div><figure class="plot">${polarSVG(p)}<figcaption class="plotcap${rotLabel() ? ' show' : ''}">${esc(rotLabel())}</figcaption></figure></div>` +
+    `</div><figure class="plot">${polarSVG(p)}<figcaption class="plotcap${rotLabel() ? ' show' : ''}">${capHTML(rotLabel())}</figcaption></figure></div>` +
     `<div class="tle">TLE: ${esc(r ? r.tleName || '-' : '-')}, <a href="https://www.n2yo.com/satellite/?s=${s.norad}#results" target="_blank" rel="noopener" title="${T('n2yo')}">NORAD ${s.norad}</a>, ${T('age')} ${age} d</div>`;
 }
 
@@ -849,7 +850,7 @@ function polarInner(p) {
     const [x, y] = polarXY(la.az, la.el);
     const vx = PC - x, vy = PC - y, vl = Math.hypot(vx, vy);
     // podpis wyśrodkowany, odsunięty od kropki w stronę środka – dobrze wygląda przy każdym obrocie
-    const lx = vl < 20 ? x : x + vx / vl * 17, ly = vl < 20 ? y - 13 : y + vy / vl * 17;
+    const lx = vl < 24 ? x : x + vx / vl * 22, ly = vl < 24 ? y - 16 : y + vy / vl * 22;   // odstęp tak dobrany, by przy każdym obrocie napis nie dotykał kółka
     s += `<circle class="tick" cx="${f(x)}" cy="${f(y)}" r="3"/>`;
     labels += `<text class="tlabel cr" x="${f(lx)}" y="${f(ly)}" text-anchor="middle" dominant-baseline="central"${cr(lx, ly)}>${hhmm(tt)}</text>`;
   }
@@ -875,7 +876,7 @@ function setPlotRotation() {
 function updateCaptions() {
   const rl = rotLabel(), tip = compassOn ? T('plotTipCompass') : T('plotTip');
   for (const c of document.querySelectorAll('.plotcap')) {
-    if (rl && c.textContent !== rl) c.textContent = rl;   // pusty napis: zostaw stary tekst, żeby mógł płynnie zgasnąć
+    if (rl && c._rl !== rl) { c.innerHTML = capHTML(rl); c._rl = rl; }   // pusty napis: zostaw stary tekst, żeby mógł płynnie zgasnąć
     c.classList.toggle('show', !!rl);
   }
   for (const ti of document.querySelectorAll('svg.polar > title')) if (ti.textContent !== tip) ti.textContent = tip;
@@ -979,6 +980,11 @@ function animateRotTo(target, DUR = 600) {
 }
 function startCompassLoop() { cancelAnimationFrame(rotTween); rotTween = 0; if (!compassRaf) { compassLastT = 0; compassStartT = performance.now(); compassRaf = requestAnimationFrame(compassFrame); } }
 function stopCompassLoop() { if (compassRaf) cancelAnimationFrame(compassRaf); compassRaf = 0; }
+// podpis pod tarczą: liczba w polu o stałej szerokości, więc „99°” → „100°” nie przesuwa napisu
+function capHTML(rl) {
+  const k = rl.lastIndexOf(': ');
+  return k < 0 ? esc(rl) : `${esc(rl.slice(0, k + 1))} <span class="capv">${esc(rl.slice(k + 2))}</span>`;
+}
 function rotLabel() {
   if (compassOn) {
     if (heading === null) return T('waitCompass');
