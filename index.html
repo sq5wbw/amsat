@@ -95,7 +95,13 @@
   #minel.held::-webkit-slider-thumb, #minel:focus-visible::-webkit-slider-thumb { margin-top: -9px; }
   /* „pokaż kolejne” pod listą */
   .more { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 18px; }
-  .morebtn { border: 1px solid var(--live); background: var(--live); border-radius: 999px; padding: 9px 22px; cursor: pointer; color: #fff; font-weight: 650; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; transition: background-color .15s ease, border-color .15s ease; }
+  .morebtn { border: 1px solid var(--live); background: var(--live); border-radius: 4px; padding: 8px 18px; cursor: pointer; color: #fff; font-weight: 650; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; transition: background-color .15s ease, border-color .15s ease; }
+  /* licznik w przycisku: co kilka sekund „nalicza się” od 1 – każda cyfra wjeżdża z góry i wygasa w dół */
+  .morebtn { display: inline-flex; align-items: center; justify-content: center; gap: .55em; line-height: 1.5; }
+  .mb-label { line-height: 1.5em; }
+  .mb-num { display: inline-flex; letter-spacing: 0; line-height: 1.5em; }   /* ta sama wysokość linii co napis obok – cyfry stoją równo z literami */
+  .mb-d { position: relative; display: block; overflow: hidden; width: 1ch; height: 1.5em; line-height: 1.5em; }   /* jedno okienko na cyfrę, jak w liczniku mechanicznym */
+  .mb-d > span { position: absolute; left: 0; top: 0; width: 1ch; text-align: center; }
   @media (hover: hover) { .morebtn:hover { background: color-mix(in srgb, var(--live) 85%, #000); border-color: color-mix(in srgb, var(--live) 85%, #000); } }
   .seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; background: var(--surface); }
   .seg button { border: 0; background: none; padding: 6px 13px; cursor: pointer; color: var(--muted); font-weight: 600; font-size: 13px; }
@@ -255,7 +261,7 @@
     .controls { grid-column: 1 / -1; width: 100%; }
     .elrow { order: 3; width: 100%; }          /* telefon: suwak na całą szerokość, pod filtrami */
     #minel { flex: 1; width: auto; }
-    .morebtn { padding: 11px 24px; }
+    .morebtn { width: 100%; padding: 10px 16px; }
     #compasswrap { margin-left: auto; }
     .cols { display: none; }
     .row {
@@ -312,7 +318,7 @@
 </header>
 
 <main class="list" id="list"><p class="empty" data-i18n="computing">Liczę przeloty…</p></main>
-<div class="more" id="more" hidden><button id="morebtn" class="morebtn"></button></div>
+<div class="more" id="more" hidden><button id="morebtn" class="morebtn"><span class="mb-label"></span><span class="mb-num num" aria-hidden="true"><span class="mb-d"><span>1</span></span><span class="mb-d"><span>0</span></span></span></button></div>
 
 <footer class="data">
   <div id="tleinfo"></div>
@@ -587,7 +593,7 @@ const I18N = {
     noPerm: 'Brak zgody na dostęp do kompasu.', compassFail: 'Nie udało się włączyć kompasu.',
     noData: 'Telefon nie przesyła danych z kompasu. Sprawdź uprawnienia przeglądarki do czujników ruchu.',
     langGroup: 'Język', locale: 'pl-PL',
-    minEl: 'Min. el.', minElAria: 'Minimalna elewacja przelotu', showMore: n => `Pokaż kolejne ${n}`, shownOf: (a, b) => `${a} z ${b}`,
+    minEl: 'Min. el.', minElAria: 'Minimalna elewacja przelotu', showMore: n => `Pokaż kolejne ${n}`, showMoreLbl: 'Pokaż kolejne', shownOf: (a, b) => `${a} z ${b}`,
   },
   en: {
     gridTitle: 'Change grid locator', modes: 'Mode', compass: 'Compass:', compassAria: 'Phone compass',
@@ -615,7 +621,7 @@ const I18N = {
     noPerm: 'Compass access was not allowed.', compassFail: 'Could not turn on the compass.',
     noData: 'The phone is not sending compass data. Check the browser’s motion sensor permissions.',
     langGroup: 'Language', locale: 'en-GB',
-    minEl: 'Min. el.', minElAria: 'Minimum pass elevation', showMore: n => `Show next ${n}`, shownOf: (a, b) => `${a} of ${b}`,
+    minEl: 'Min. el.', minElAria: 'Minimum pass elevation', showMore: n => `Show next ${n}`, showMoreLbl: 'Show next', shownOf: (a, b) => `${a} of ${b}`,
   },
 };
 // uwagi i opisy z listy satelitów po angielsku
@@ -1191,12 +1197,41 @@ function draw() {
 }
 
 // co sekundę: odliczanie „za …”; jeśli przelot się zaczął albo skończył – odśwież listę
+// licznik w przycisku – jak licznik mechaniczny: przewija się tylko cyfra, która się zmienia
+function setMoreNum(n) {
+  const s = pad2(n);
+  $('morebtn').querySelectorAll('.mb-d').forEach((d, i) => d.replaceChildren(Object.assign(document.createElement('span'), { textContent: s[i] })));
+}
+function rollDigit(slot, ch, DUR) {
+  const old = slot.lastElementChild;
+  if (old && old.textContent === ch) return;
+  const el = Object.assign(document.createElement('span'), { textContent: ch });
+  slot.appendChild(el);
+  el.animate([{ transform: 'translateY(-90%)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: DUR, easing: 'cubic-bezier(.2, .7, .2, 1)' });
+  if (old) old.animate([{ transform: 'none', opacity: 1 }, { transform: 'translateY(90%)', opacity: 0 }], { duration: DUR, easing: 'cubic-bezier(.4, 0, .6, 1)', fill: 'forwards' }).onfinish = () => old.remove();
+}
+function countUp() {
+  const btn = $('morebtn'), n = btn._n;
+  if (!n || $('more').hidden || document.hidden || reduceMotion() || btn._counting) return;
+  btn._counting = true;
+  const STEP = 150, DUR = 420;
+  const slots = btn.querySelectorAll('.mb-d');
+  for (let k = 1; k <= n; k++) setTimeout(() => {
+    const s = pad2(btn._n === n ? k : btn._n);
+    slots.forEach((d, i) => rollDigit(d, s[i], DUR));
+    if (k === n) setTimeout(() => { btn._counting = false; }, DUR);
+  }, (k - 1) * STEP);
+}
+
 function updateMore(total, visible) {
   const box = $('more');
   const left = total - visible;
   box.hidden = left <= 0;
   if (left > 0) {
-    $('morebtn').textContent = T('showMore')(Math.min(pageStep(), left));
+    const n = Math.min(pageStep(), left), btn = $('morebtn');
+    btn.querySelector('.mb-label').textContent = T('showMoreLbl');
+    btn.setAttribute('aria-label', T('showMore')(n));
+    if (btn._n !== n) { btn._n = n; setMoreNum(n); }
   }
 }
 
@@ -1412,6 +1447,7 @@ async function loadTLE(force) {
   setInterval(updatePositions, 3000);
   setInterval(updatePlots, 1000);
   setInterval(tick, 1000);
+  setInterval(countUp, 6000);   // co 6 s licznik w przycisku nalicza się od nowa
 })();
 </script>
 </body>
