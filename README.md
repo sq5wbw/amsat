@@ -1,20 +1,21 @@
-# SAT Predictor
+# SAT° Predictor
 
 **Amateur radio satellite pass predictor that runs entirely in your browser.**
 
 👉 **Live:** [sq5wbw.github.io/satpredictor](https://sq5wbw.github.io/satpredictor/)
 
-SAT Predictor shows the upcoming passes of amateur radio satellites over your grid locator for the next 24 hours: when each satellite rises, how high it climbs, where to point your antenna, and which frequencies to use. It is a single HTML file with no server, no account and no installation.
+SAT° Predictor shows the upcoming passes of amateur radio satellites over your grid locator for the next 24 hours: when each satellite rises, how high it climbs, where to point your antenna, and which frequencies to use. It is a single HTML file with no server, no account and no installation.
 
 ## Features
 
-- **Pass list for the next 24 hours.** AOS time, pass duration, countdown to AOS, maximum elevation and azimuth path (AOS → max → LOS) for each pass.
+- **Pass list for the next 24 hours.** AOS time, pass duration, countdown to AOS (down to the second in the last minute), maximum elevation and azimuth path (AOS → max → LOS) for each pass. The nearest passes are shown first (20 on desktop, 10 on mobile); **Show next 10** loads more.
 - **Live passes at a glance.** Satellites currently above the horizon are marked **QRV**, show their live elevation and azimuth, and have a progress bar on the left edge of the row that drains from AOS to LOS.
 - **Sky plot.** Click a pass to open a polar plot of its track with AOS, max and LOS times and the satellite’s current position.
 - **Frequencies and notes.** Uplink, downlink, beacon, mode and operating notes for every satellite (for example, SO-50’s 74.4 Hz arming tone).
 - **Mode filters.** Show or hide FM, SSB (linear transponders) and DIG (packet, APRS, SSTV, telemetry) satellites.
-- **Rotatable compass.** Drag the sky plot to match the way you are facing. The rotation is remembered.
-- **Phone compass.** On a phone, turn on *Compass* and the sky plot follows the phone’s magnetometer, so the plot always matches the real sky. Magnetic declination is corrected automatically (default +6°, suitable for Poland), and you can fine-tune the correction by dragging the plot.
+- **Minimum elevation.** A slider (0–45°) hides low passes that are hard to work.
+- **Rotatable compass.** On desktop, drag the sky plot to match the way you are facing; double-click puts north back on top. The rotation is remembered.
+- **Phone compass.** On a phone, turn on *Compass* and the sky plot smoothly follows the phone’s magnetometer, so the plot always matches the real sky. Magnetic declination is calculated for your grid locator with the World Magnetic Model (WMM2025) and shown under the plot.
 - **Responsive design.** Works on desktop and mobile, in light and dark mode.
 - **English and Polish.** Switch with **EN | PL** (top right on desktop, in the footer on mobile). The choice is remembered.
 
@@ -24,7 +25,7 @@ SAT Predictor shows the upcoming passes of amateur radio satellites over your gr
 2. Click the **Grid** field and enter your Maidenhead locator (4 or 6 characters, e.g. `KO02` or `KO02OC`). You can also link directly to a locator: `https://sq5wbw.github.io/satpredictor/#KO02OC`.
 3. Click any pass to see its frequencies and sky plot.
 
-Your locator, filters, language and compass settings are stored only in your own browser.
+Your locator, filters, minimum elevation, language and compass settings are stored only in your own browser.
 
 ## Orbital data (TLE)
 
@@ -49,14 +50,15 @@ Download `index.html` and open it in a browser. Everything works offline once th
 
 - One self-contained HTML file: HTML, CSS and plain JavaScript, no build step.
 - Orbit propagation with [satellite.js](https://github.com/shashwatak/satellite-js) (SGP4, MIT license), embedded in the file.
+- Magnetic declination from the [World Magnetic Model WMM2025](https://www.ncei.noaa.gov/products/world-magnetic-model) (NOAA/NGA, public domain), valid until the end of 2029.
 - Font: [Recursive](https://www.recursive.design/) from Google Fonts, with a system font fallback.
 
 ## Credits
 
-SAT Predictor was written from scratch as a browser-only tool by SQ5WBW, with the help of AI (Claude by Anthropic).
+SAT° Predictor was written from scratch as a browser-only tool by SQ5WBW, with the help of AI (Claude by Anthropic).
 
 Thanks to CelesTrak, AMSAT, JE9PEL and N2YO for the data that makes this possible.
 
 ---
 
-© SAT Predictor by SQ5WBW · 73!
+© SAT° Predictor by SQ5WBW · 73!
