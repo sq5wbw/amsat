@@ -872,7 +872,7 @@ function applyRot() {
   updateCaptions();
 }
 // pętla animacji kompasu: wykres płynnie „dogania” odczyt magnetometru w każdej klatce
-let compassRaf = 0, compassLastT = 0;
+let compassRaf = 0, compassLastT = 0, compassStartT = 0;
 function compassFrame(ts) {
   compassRaf = 0;
   if (!compassOn) return;
@@ -880,14 +880,31 @@ function compassFrame(ts) {
     const target = norm(-(heading + compassCorr));
     const d = ((target - plotRot + 540) % 360) - 180;
     const dt = compassLastT ? Math.min(100, ts - compassLastT) : 16;
-    const k = 1 - Math.exp(-dt / 70);                  // stała czasowa ok. 70 ms
+    const tau = ts - compassStartT < 900 ? 170 : 70;  // po włączeniu: spokojny „dojazd”, potem szybkie śledzenie
+    const k = 1 - Math.exp(-dt / tau);
     const next = Math.abs(d) < 0.02 ? target : norm(plotRot + d * k);
     if (next !== plotRot) { plotRot = next; setPlotRotation(); }
   }
   compassLastT = ts;
   compassRaf = requestAnimationFrame(compassFrame);
 }
-function startCompassLoop() { if (!compassRaf) { compassLastT = 0; compassRaf = requestAnimationFrame(compassFrame); } }
+// płynny obrót wykresów do zadanego kąta (najkrótszą drogą)
+let rotTween = 0;
+function animateRotTo(target, DUR = 600) {
+  cancelAnimationFrame(rotTween); rotTween = 0;
+  const from = plotRot, delta = ((target - from + 540) % 360) - 180;
+  if (reduceMotion() || Math.abs(delta) < 0.5) { plotRot = norm(target); setPlotRotation(); updateCaptions(); return; }
+  const t0 = performance.now(), ease = x => 1 - Math.pow(1 - x, 3);
+  const step = now => {
+    if (compassOn) { rotTween = 0; return; }               // kompas przejął sterowanie
+    const k = Math.min(1, (now - t0) / DUR);
+    plotRot = norm(from + delta * ease(k));
+    setPlotRotation();
+    if (k < 1) rotTween = requestAnimationFrame(step); else { rotTween = 0; updateCaptions(); }
+  };
+  rotTween = requestAnimationFrame(step);
+}
+function startCompassLoop() { cancelAnimationFrame(rotTween); rotTween = 0; if (!compassRaf) { compassLastT = 0; compassStartT = performance.now(); compassRaf = requestAnimationFrame(compassFrame); } }
 function stopCompassLoop() { if (compassRaf) cancelAnimationFrame(compassRaf); compassRaf = 0; }
 function rotLabel() {
   if (compassOn) {
@@ -913,6 +930,7 @@ function setupPlotRotation() {
     const svg = e.target.closest && e.target.closest('svg.polar');
     if (!svg || e.button > 0 || compassOn) return;   // przy włączonym kompasie wykres tylko podąża za telefonem
     e.preventDefault();
+    cancelAnimationFrame(rotTween); rotTween = 0;
     drag = { svg, a0: angleOf(svg, e), r0: manualRot, c0: compassCorr, id: e.pointerId };
     svg.classList.add('dragging');
     try { svg.setPointerCapture(e.pointerId); } catch (err) {}
@@ -936,20 +954,9 @@ function setupPlotRotation() {
   document.addEventListener('pointercancel', end);
   document.addEventListener('dblclick', e => {
     if (compassOn || !(e.target.closest && e.target.closest('svg.polar'))) return;
-    // płynny powrót północy na górę (najkrótszą drogą)
-    const from = plotRot, delta = ((0 - from + 540) % 360) - 180;
+    // płynny powrót północy na górę
     manualRot = 0; store.set('plot_rot', '0');
-    if (reduceMotion() || Math.abs(delta) < 0.5) { applyRot(); return; }
-    const t0 = performance.now(), DUR = 600;
-    const ease = x => 1 - Math.pow(1 - x, 3);                 // łagodne wyhamowanie
-    const step = now => {
-      if (compassOn || manualRot !== 0) return;              // przerwane (np. nowe przeciąganie)
-      const k = Math.min(1, (now - t0) / DUR);
-      plotRot = norm(from + delta * ease(k));
-      setPlotRotation(); updateCaptions();
-      if (k < 1) requestAnimationFrame(step); else applyRot();
-    };
-    requestAnimationFrame(step);
+    animateRotTo(0);
   });
   setupCompass();
 }
@@ -975,7 +982,7 @@ function setupCompass() {
     sx = sx * (1 - k) + Math.sin(h * Math.PI / 180) * k;
     sy = sy * (1 - k) + Math.cos(h * Math.PI / 180) * k;
     heading = norm(Math.atan2(sx, sy) * 180 / Math.PI);
-    if (first) { plotRot = norm(-(heading + compassCorr)); setPlotRotation(); updateCaptions(); }
+    if (first) updateCaptions();   // wykres dojedzie płynnie w pętli compassFrame
   };
   const onAbs = e => { if (e.absolute !== false && e.alpha !== null) onHeading(360 - e.alpha); };
   const onIOS = e => {
@@ -992,7 +999,7 @@ function setupCompass() {
   };
 
   btn.addEventListener('click', async () => {
-    if (compassOn) { compassOn = false; heading = null; stop(); stopCompassLoop(); setBtn(); applyRot(); return; }
+    if (compassOn) { compassOn = false; heading = null; stop(); stopCompassLoop(); setBtn(); updateCaptions(); animateRotTo(manualRot); return; }
     if (!window.isSecureContext) {
       alert(T('needHttps'));
       return;
