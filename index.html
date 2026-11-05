@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#121b20" media="(prefers-color-scheme: dark)">
 <title>SAT° Predictor</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛰️</text></svg>">
+<script>try { const th = localStorage.getItem('theme'); if (th === 'light' || th === 'dark') document.documentElement.dataset.theme = th; } catch (e) {}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Recursive:wght,CASL,MONO@300..800,0..1,0..1&display=swap" rel="stylesheet">
@@ -28,22 +29,39 @@
     --pulse:   #ffffff;
     --sans: "Recursive", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
+  /* tryb ciemny: z systemu (gdy użytkownik nie wybrał inaczej) albo wymuszony przyciskiem słońce/księżyc */
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
       color-scheme: dark;
       --paper:   #121b20;
       --surface: #18242a;
-      --ink:     #dce5e2;
-      --muted:   #8a9da0;
+      --ink:     #b3bfbc;   /* przygaszony, żeby w nocy ekran mniej świecił */
+      --muted:   #7c8d90;
       --rule:    #2d3c42;
       --track:   #7ab5e6;
       --plot:    #dab7c9;
-      --live:    #ef72b2;
+      --live:    #a6206a;
       --live-bg: #33202b;
       --hover:   #1d2b32;
       --pulse:   #2a3b42;
     }
   }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper:   #121b20;
+    --surface: #18242a;
+    --ink:     #b3bfbc;
+    --muted:   #7c8d90;
+    --rule:    #2d3c42;
+    --track:   #7ab5e6;
+    --plot:    #dab7c9;
+    --live:    #a6206a;
+    --live-bg: #33202b;
+    --hover:   #1d2b32;
+    --pulse:   #2a3b42;
+  }
+  /* płynne przejście kolorów przy przełączaniu motywu */
+  html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after { transition: background-color .35s ease, color .35s ease, border-color .35s ease, fill .35s ease, stroke .35s ease !important; }
 
   *, *::before, *::after { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }   /* bez niebieskiego „podświetlenia stuknięcia” na Androidzie – aplikacja ma własne reakcje na dotyk */
@@ -236,7 +254,16 @@
   .lang button:hover { color: var(--ink); }
   .lang button[aria-pressed="true"] { color: var(--ink); font-weight: 700; }
   header.top { position: relative; }
-  .lang-top { position: absolute; top: -4px; right: -6px; }
+  .tools-top { position: absolute; top: -6px; right: -6px; display: flex; align-items: center; gap: 4px; }
+  /* przycisk motywu: koło podzielone na pół, monochromatyczne */
+  .theme { width: 34px; height: 34px; padding: 0; border: 0; background: none; border-radius: 50%; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex: none; }
+  .theme svg { overflow: visible; }
+  /* ikona: koło podzielone na pół – przy zmianie motywu obraca się o 180°, wypełniona połowa przechodzi na drugą stronę */
+  .theme .ic-half { transform-box: view-box; transform-origin: 12px 12px; transition: transform .6s cubic-bezier(.2, .7, .2, 1); }
+  html.is-dark .theme .ic-half { transform: rotate(180deg); }
+  @media (prefers-reduced-motion: reduce) { .theme .ic-half { transition: none; } }
+  @media (hover: hover) { .theme:hover { background: var(--hover); } }
+  .theme-m { display: none; }
   .lang-foot { display: none; }
   .notice { margin-top: 12px; padding: 10px 12px; border-left: 3px solid var(--live); background: var(--live-bg); color: var(--ink); border-radius: 0 4px 4px 0; }
   .notice p { margin: 0 0 4px; }
@@ -280,7 +307,8 @@
     .row .info .el b { font-weight: inherit; color: inherit; }
     .det-in { padding: 4px 10px 14px; }
     .det-grid { grid-template-columns: 1fr; }
-    .lang-top { display: none; }
+    .tools-top { display: none; }
+    .theme-m { display: inline-flex; margin-left: -6px; }
     .lang-foot { display: inline-flex; margin-right: -6px; }
     .det-grid figure.plot { order: -1; }
     svg.polar { max-width: none; width: calc(100% - 16px); margin: 6px auto 0; }
@@ -301,7 +329,7 @@
 <div class="wrap">
 
 <header class="top">
-  <div class="lang lang-top" role="group" data-i18n-aria="langGroup"><button data-lang="pl" lang="pl">PL</button><button data-lang="en" lang="en">EN</button></div>
+  <div class="tools-top"><button class="theme theme-top" type="button"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><g class="ic-half"><circle cx="12" cy="12" r="7.5" fill="none" stroke="var(--ink)" stroke-width="1.5"/><path d="M12 4.5a7.5 7.5 0 0 0 0 15z" fill="var(--ink)"/></g></svg></button><div class="lang lang-top" role="group" data-i18n-aria="langGroup"><button data-lang="pl" lang="pl">PL</button><button data-lang="en" lang="en">EN</button></div></div>
   <div class="brand">
     <h1>SAT<span class="mark" aria-hidden="true">°</span> Predictor</h1>
     <p class="where">Grid: <button class="loc mono" id="loc" data-i18n-title="gridTitle"></button></p>
@@ -310,6 +338,7 @@
     <div class="seg" role="group" data-i18n-aria="modes">
       <button class="flt" data-m="FM" aria-pressed="true">FM</button><button class="flt" data-m="SSB" aria-pressed="true">SSB</button><button class="flt" data-m="DIG" aria-pressed="true">DIG</button>
     </div>
+    <button class="theme theme-m" type="button"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><g class="ic-half"><circle cx="12" cy="12" r="7.5" fill="none" stroke="var(--ink)" stroke-width="1.5"/><path d="M12 4.5a7.5 7.5 0 0 0 0 15z" fill="var(--ink)"/></g></svg></button>
     <div class="elrow">
       <input type="range" id="minel" min="0" max="45" step="1" value="0" data-i18n-aria="minElAria">
       <label for="minel" class="elval"><span data-i18n="minEl">Min. el.</span> <b class="num" id="minelv">0°</b></label>
@@ -595,7 +624,7 @@ const I18N = {
     needHttps: 'Kompas telefonu działa tylko na stronie otwartej przez https (nie z pliku na dysku).',
     noPerm: 'Brak zgody na dostęp do kompasu.', compassFail: 'Nie udało się włączyć kompasu.',
     noData: 'Telefon nie przesyła danych z kompasu. Sprawdź uprawnienia przeglądarki do czujników ruchu.',
-    langGroup: 'Język', locale: 'pl-PL',
+    langGroup: 'Język', locale: 'pl-PL', toDark: 'Włącz tryb ciemny', toLight: 'Włącz tryb jasny',
     minEl: 'Min. el.', minElAria: 'Minimalna elewacja przelotu', showMore: n => `Pokaż kolejne ${n} ${plPasses(n)}`, showMoreLbl: 'Pokaż kolejne', passUnit: n => plPasses(n), shownOf: (a, b) => `${a} z ${b}`,
   },
   en: {
@@ -623,7 +652,7 @@ const I18N = {
     needHttps: 'The phone compass only works on a page opened over https (not from a file on disk).',
     noPerm: 'Compass access was not allowed.', compassFail: 'Could not turn on the compass.',
     noData: 'The phone is not sending compass data. Check the browser’s motion sensor permissions.',
-    langGroup: 'Language', locale: 'en-GB',
+    langGroup: 'Language', locale: 'en-GB', toDark: 'Switch to dark mode', toLight: 'Switch to light mode',
     minEl: 'Min. el.', minElAria: 'Minimum pass elevation', showMore: n => `Show next ${n} ${n === 1 ? 'pass' : 'passes'}`, showMoreLbl: 'Show next', passUnit: n => n === 1 ? 'pass' : 'passes', shownOf: (a, b) => `${a} of ${b}`,
   },
 };
@@ -659,6 +688,7 @@ function applyLang() {
   for (const el of document.querySelectorAll('[data-i18n-title]')) el.title = T(el.dataset.i18nTitle);
   for (const el of document.querySelectorAll('[data-i18n-aria]')) el.setAttribute('aria-label', T(el.dataset.i18nAria));
   for (const b of document.querySelectorAll('.lang button')) b.setAttribute('aria-pressed', String(b.dataset.lang === lang));
+  if (typeof syncThemeUI === 'function' && document.querySelector('.theme')) syncThemeUI();
 }
 
 // ---------- stan i rysowanie ----------
@@ -1381,6 +1411,29 @@ async function loadTLE(force) {
 }
 
 // ---------- start ----------
+// ---------- motyw jasny / ciemny ----------
+const sysDark = matchMedia('(prefers-color-scheme: dark)');
+const isDarkNow = () => { const th = document.documentElement.dataset.theme; return th ? th === 'dark' : sysDark.matches; };
+function syncThemeUI() {
+  const dark = isDarkNow();
+  document.documentElement.classList.toggle('is-dark', dark);
+  for (const b of document.querySelectorAll('.theme')) b.setAttribute('aria-label', T(dark ? 'toLight' : 'toDark'));
+  const meta = document.querySelectorAll('meta[name="theme-color"]');
+  meta.forEach(m => { m.setAttribute('content', dark ? '#121b20' : '#eef1ee'); m.removeAttribute('media'); });
+}
+function setTheme(th) {
+  const html = document.documentElement;
+  if (!reduceMotion()) { html.classList.add('theme-anim'); clearTimeout(setTheme._t); setTheme._t = setTimeout(() => html.classList.remove('theme-anim'), 400); }
+  html.dataset.theme = th;
+  store.set('theme', th);
+  syncThemeUI();
+}
+(function initTheme() {
+  const saved = store.get('theme');
+  if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+  sysDark.addEventListener('change', syncThemeUI);
+})();
+
 (function init() {
   const savedLang = store.get('lang');
   lang = savedLang === 'pl' || savedLang === 'en' ? savedLang : 'en';   // domyślnie EN; wybór użytkownika jest zapamiętywany
@@ -1420,6 +1473,8 @@ async function loadTLE(force) {
     });
   }
   setupPlotRotation();
+  syncThemeUI();
+  for (const b of document.querySelectorAll('.theme')) b.addEventListener('click', () => setTheme(isDarkNow() ? 'light' : 'dark'));
   const sl = $('minel');
   const setSliderUI = () => {
     sl.value = String(minEl);
