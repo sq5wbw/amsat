@@ -25,7 +25,7 @@
     --track:   #1d5c8f;
     --plot:    #dab7c9;   /* próba: kolor toru przelotu na wykresie */
     --tick:    #a6206a;
-    --horizon: #5b6d71;
+    --horizon: #9aa9a7;   /* jaśniejszy obrys – większy kontrast z fioletowymi napisami */
     --live:    #a6206a;
     --live-bg: #f6e3ec;
     --hover:   #e4eae7;
@@ -45,7 +45,7 @@
       --track:   #7ab5e6;
       --plot:    #55666c;   /* tor przelotu w trybie ciemnym: stonowana szarość zamiast jasnego fioletu */
       --tick:    #55666c;   /* w nocy: kółka, tor i obrys tarczy w jednym kolorze */
-      --horizon: #55666c;
+      --horizon: #36454b;
       --live:    #a6206a;
       --live-bg: #1c282e;   /* w trybie ciemnym neutralne tło komunikatów */
       --hover:   #1d2b32;
@@ -63,7 +63,7 @@
     --track:   #7ab5e6;
     --plot:    #55666c;
     --tick:    #55666c;
-    --horizon: #55666c;
+    --horizon: #36454b;
     --live:    #a6206a;
     --live-bg: #1c282e;   /* w trybie ciemnym neutralne tło komunikatów */
     --hover:   #1d2b32;
@@ -243,14 +243,7 @@
   /* ---------- wykres nieba ---------- */
   figure.plot { margin: 0; }
   /* podpis w prawym górnym rogu wykresu („Rotation: 96°”) – pojawia się i znika płynnie */
-  /* napisy w rogach wykresu (stopnie obrotu, AZ/EL, AOS/LOS in): wyrównane do krawędzi kolumny,
-     dokładnie w linii z „AOS” i „LOS” w wierszu godzin */
   figure.plot { position: relative; }
-  .pc { position: absolute; font-size: 11px; line-height: 1; color: var(--ink); font-variation-settings: "MONO" 1; font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none; }
-  .pc-rot { top: var(--pc-top, 6.7px); right: var(--pc-right, 0px); opacity: 0; transition: opacity .3s ease; }
-  .pc-rot.show { opacity: 1; }
-  .pc-azel { bottom: 0; left: 0; }
-  .pc-los { bottom: 0; right: 0; }
   svg.polar { width: 100%; max-width: 320px; height: auto; display: block; touch-action: pan-y pinch-zoom; user-select: none; -webkit-user-select: none; margin: 0 auto; }
   svg.polar .hit { cursor: grab; }   /* obracać można tylko tarczę, pole wokół przewija stronę */
   svg.polar.dragging, svg.polar.dragging .hit { cursor: grabbing; }
@@ -264,8 +257,8 @@
   svg.polar .card { fill: var(--ink); font-size: 12px; font-weight: 700; font-variation-settings: "MONO" 0; }
   svg.polar .ring { font-size: 8.5px; }
   svg.polar .track { fill: none; stroke: var(--plot); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-  svg.polar .tick { fill: var(--surface); stroke: var(--tick); stroke-width: 1.6; }   /* kontur kółek AOS / Max / LOS */
-  svg.polar .tlabel, svg.polar .ring, svg.polar .card { transition: opacity .3s ease; }
+  svg.polar .tick { fill: var(--surface); stroke: var(--plot); stroke-width: 2.2; }   /* kółka AOS / Max / LOS: kolor i grubość jak tor, wielkość jak kropka satelity */
+  svg.polar .tlabel, svg.polar .ring, svg.polar .card { transition: opacity .45s cubic-bezier(.4, 0, .2, 1); }
   svg.polar .tlabel { fill: var(--ink); font-weight: 600; }   /* godziny w kolorze tekstu (#172630 w trybie jasnym) */
   svg.polar .halo { fill: var(--live); fill-opacity: .3; stroke: var(--live); stroke-width: 1.2; stroke-opacity: .7; transform-box: fill-box; transform-origin: center; animation: pulse 1.8s cubic-bezier(.2, .6, .3, 1) infinite; }
   @keyframes pulse {
@@ -344,7 +337,7 @@
     .row .name { grid-area: name; }
     .row .eta  { grid-area: eta; }
     .row .start, .row .dur, .row .el, .row .az { grid-area: info; }
-    .row .info { grid-area: info; display: flex; flex-wrap: wrap; gap: 2px 14px; color: var(--muted); font-size: 13.5px; }
+    .row .info { grid-area: info; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 14px; color: var(--muted); font-size: 13.5px; }   /* rozłożone równo od lewej do prawej */
     .row .info .el b { font-weight: inherit; color: inherit; }
     .det-in { padding: 4px 12px 14px; }
     .det-grid { grid-template-columns: 1fr; }
@@ -358,9 +351,6 @@
     .times { gap: 4px 22px; }
     .times div em { display: block; margin-left: 0; }
     .times { display: flex; justify-content: space-between; width: calc(100% + 1px); margin-right: -1px; }   /* -1px: korekta optyczna prawej krawędzi cyfr i liter */
-    .pc { font-size: 13px; }
-    .pc-rot { --pc-top: 6.3px; --pc-right: -1.3px; }
-    .pc-los { right: -0.6px; }   /* korekta optyczna znaku „°”, by krawędź liczby była w linii z „QRV” i „in 00:01” */   /* odstęp od góry panelu = odstęp od prawej krawędzi */   /* równe odstępy: godzina → godzina → godzina */
     .times div:nth-of-type(2) { text-align: center; }
     .times div:nth-of-type(3) { text-align: right; }
     /* strzałki AOS → Max → LOS na wysokości godzin, jak w linijce azymutów */
@@ -798,7 +788,7 @@ function detailsHTML(p) {
       row(T('down'), TD(s.down), 'num') + row(T('up'), TD(s.up), 'num') + row(T('beacon'), TD(s.beacon), 'num') +
       row(T('type'), TD(s.type || s.mode)) + (s.note ? row(T('note'), TD(s.note), 'note') : '') +
     `</dl>` +
-    `</div><figure class="plot">${polarSVG(p)}<span class="pc pc-rot${rotLabel() ? ' show' : ''}">${esc(capParts(rotLabel()).val)}</span><span class="pc pc-azel"></span><span class="pc pc-los"></span></figure></div>` +
+    `</div><figure class="plot">${polarSVG(p)}</figure></div>` +
     `<div class="tle">TLE: ${esc(r ? r.tleName || '-' : '-')}, <a href="https://www.n2yo.com/satellite/?s=${s.norad}#results" target="_blank" rel="noopener" title="${T('n2yo')}">NORAD ${s.norad}</a>, ${T('age')} ${age} d</div>`;
 }
 
@@ -823,7 +813,7 @@ function passTrack(p) {
 }
 // pole widoku wykresu: na komputerze z marginesem na podpisy, na telefonie ciaśniej, żeby tarcza była duża
 const isNarrow = () => matchMedia('(max-width: 720px)').matches;
-const plotBox = () => isNarrow() ? { x: 4, y: 0, w: 232, h: 250 } : { x: -40, y: 0, w: 320, h: 240 };
+const plotBox = () => isNarrow() ? { x: 4, y: 0, w: 232, h: 240 } : { x: -40, y: 0, w: 320, h: 240 };
 function polarSVG(p) {
   const v = plotBox();
   return `<svg class="polar" viewBox="${v.x} ${v.y} ${v.w} ${v.h}" role="img" aria-label="${esc(T('plotAria')(p.sat.name))}" data-sat="${esc(p.sat.name)}" data-start="${p.start}" data-end="${p.end}">` +
@@ -840,9 +830,12 @@ function polarInner(p) {
   // więc przy obrocie nie są przerysowywane pod kątem i ich krawędzie zostają idealnie gładkie
   s += `<circle class="disc" cx="${PC}" cy="${PC}" r="${PR}"/>`;
   for (const el of [30, 60]) s += `<circle class="grid" cx="${PC}" cy="${PC}" r="${f(PR * (90 - el) / 90)}"/>`;
-  s += `<circle class="horizon" cx="${PC}" cy="${PC}" r="${PR}"/>`;
+  // warstwy: krzyż osi (obracany) → obrys horyzontu (nieobracany, na wierzchu osi) → reszta (obracana)
   s += `<g class="rot" transform="rotate(${f(plotRot)} ${PC} ${PC})">`;
   s += `<line class="grid" x1="${PC}" y1="${PC - PR}" x2="${PC}" y2="${PC + PR}"/><line class="grid" x1="${PC - PR}" y1="${PC}" x2="${PC + PR}" y2="${PC}"/>`;
+  s += `</g>`;
+  s += `<circle class="horizon" cx="${PC}" cy="${PC}" r="${PR}"/>`;
+  s += `<g class="rot" transform="rotate(${f(plotRot)} ${PC} ${PC})">`;
   for (const el of [30, 60]) {
     const [x, y] = polarXY(135, el);
     s += `<text class="ring cr" x="${f(x)}" y="${f(y)}" text-anchor="middle" dominant-baseline="central"${cr(x, y)}>${el}°</text>`;
@@ -861,7 +854,7 @@ function polarInner(p) {
     const vx = PC - x, vy = PC - y, vl = Math.hypot(vx, vy);
     // podpis wyśrodkowany, odsunięty od kropki w stronę środka – dobrze wygląda przy każdym obrocie
     const lx = vl < 24 ? x : x + vx / vl * 22, ly = vl < 24 ? y - 16 : y + vy / vl * 22;   // odstęp tak dobrany, by przy każdym obrocie napis nie dotykał kółka
-    s += `<circle class="tick" cx="${f(x)}" cy="${f(y)}" r="3"/>`;
+    s += `<circle class="tick" cx="${f(x)}" cy="${f(y)}" r="3.2"/>`;
     labels += `<text class="tlabel cr" x="${f(lx)}" y="${f(ly)}" text-anchor="middle" dominant-baseline="central"${cr(lx, ly)}>${hhmm(tt)}</text>`;
   }
   s += labels;
@@ -874,9 +867,9 @@ function polarInner(p) {
 function setPlotRotation() {
   const a = plotRot.toFixed(2), m = (-plotRot).toFixed(2);
   for (const svg of document.querySelectorAll('svg.polar')) {
-    if (!svg._g) { svg._g = svg.querySelector('g.rot'); svg._cr = [...svg.querySelectorAll('.cr')]; svg._nm = svg.querySelector('g.nm'); }
-    if (!svg._g) continue;
-    svg._g.setAttribute('transform', `rotate(${a} ${PC} ${PC})`);
+    if (!svg._g) { svg._g = [...svg.querySelectorAll('g.rot')]; svg._cr = [...svg.querySelectorAll('.cr')]; svg._nm = svg.querySelector('g.nm'); }
+    if (!svg._g.length) continue;
+    for (const gr of svg._g) gr.setAttribute('transform', `rotate(${a} ${PC} ${PC})`);
     for (const el of svg._cr) el.setAttribute('transform', `rotate(${m} ${el.dataset.cx} ${el.dataset.cy})`);
     if (svg._nm) svg._nm.setAttribute('transform', `rotate(${m})`);
   }
@@ -886,10 +879,6 @@ function setPlotRotation() {
 function updateCaptions() {
   const rl = rotLabel(), tip = compassOn ? T('plotTipCompass') : T('plotTip');
   const cp = capParts(rl);
-  for (const el of document.querySelectorAll('.pc-rot')) {
-    if (cp.on && el.textContent !== cp.val) el.textContent = cp.val;   // pusty napis: zostaw stary tekst, żeby mógł płynnie zgasnąć
-    el.classList.toggle('show', cp.on);
-  }
   for (const ti of document.querySelectorAll('svg.polar > title')) if (ti.textContent !== tip) ti.textContent = tip;
 }
 function redrawPlots() {
@@ -1167,7 +1156,7 @@ function placeSatName(svg, g, x, y) {
   const sy = PC + (x - PC) * Math.sin(a) + (y - PC) * Math.cos(a);
   const pad = 3, minX = vb.x + pad + w / 2, maxX = vb.x + vb.width - pad - w / 2;
   tx._tx = Math.max(minX, Math.min(maxX, sx)) - sx;                     // cel; samo przesunięcie jest animowane
-  tx._ty = sy - 22 < vb.y + pad ? 22 : -12;                              // przy górnej krawędzi – pod kropką
+  tx._ty = Math.max(-12, vb.y + pad + 9 - sy);                           // zawsze nad kropką; przy górnej krawędzi tylko płynnie dosuwa się w dół
   if (tx._cx === undefined) { tx._cx = tx._tx; tx._cy = tx._ty; tx.setAttribute('x', tx._cx.toFixed(2)); tx.setAttribute('y', tx._cy.toFixed(2)); }
   startNameAnim();
 }
@@ -1192,7 +1181,7 @@ function nameFrame(ts) {
 // Gdy napis wyższego planu zbliża się do niższego, niższy stopniowo wygasa (0 przy zetknięciu, pełny przy odstępie ≥ FADE px).
 // dwa stany zamiast półprzezroczystości: napis znika przy zbliżeniu < HIDE px, wraca dopiero przy odstępie > SHOW px
 // (histereza – nic nie miga na granicy i nic nie wisi długo „w połowie”)
-const HIDE = 4, SHOW = 10;
+const HIDE = 2, SHOW = 6;
 function rectGap(a, b) {
   const dx = Math.max(0, Math.max(a.left, b.left) - Math.min(a.right, b.right));
   const dy = Math.max(0, Math.max(a.top, b.top) - Math.min(a.bottom, b.bottom));
@@ -1213,7 +1202,13 @@ function resolveCollisions(svg) {
   const satR = (sat && sat.textContent ? [R(sat)] : []).concat(dot ? [grow(R(dot), 4)] : []);   // plan 1: nazwa i kropka satelity (z zapasem na poświatę)
   const minGap = (rect, above) => above.reduce((g, r) => Math.min(g, rectGap(rect, r)), Infinity);
   const timeR = times.map(R);
-  const timeHid = times.map((el, i) => setHidden(el, minGap(timeR[i], satR)));
+  // godziny między sobą: AOS > LOS > Max (krótkie, niskie przeloty – wszystkie trzy w jednym miejscu)
+  const timeHid = [], kept = [];
+  for (const i of [0, 2, 1]) {
+    if (!times[i]) continue;
+    timeHid[i] = setHidden(times[i], minGap(timeR[i], satR.concat(kept)));
+    if (!timeHid[i]) kept.push(timeR[i]);
+  }
   // kierunki i stopnie ustępują nazwie satelity i godzinom (tylko tym, które są widoczne)
   const visTimes = timeR.filter((r, i) => !timeHid[i]);
   rings.forEach(el => setHidden(el, minGap(R(el), satR.concat(visTimes))));
@@ -1223,30 +1218,30 @@ function scheduleCollisions() {
   if (collideRaf) return;
   collideRaf = requestAnimationFrame(() => { collideRaf = 0; document.querySelectorAll('svg.polar').forEach(resolveCollisions); });
 }
+// kółka na torze: zewnętrzna średnica (z konturem) = średnica kropki satelity
+function sizeTicks(svg) {
+  const s = svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
+  if (!s || svg._tickS === s) return;
+  svg._tickS = s;
+  const r = Math.max(1.5, 4 - 1.1 / s).toFixed(2);   // 4 = promień kropki; 1.1 px = połowa konturu (2,2 px, nieskalowany)
+  svg.querySelectorAll('.tick').forEach(c => c.setAttribute('r', r));
+}
 function updatePlots() {
   const now = Date.now();
   for (const svg of document.querySelectorAll('svg.polar')) {
     if (svg.closest('.det:not(.open)')) continue;
     const r = satrecs.find(x => x.sat.name === svg.dataset.sat);
     const start = +svg.dataset.start, end = +svg.dataset.end;
-    const fig = svg.parentElement, g = svg.querySelector('.satpos'), azel = fig.querySelector('.pc-azel'), los = fig.querySelector('.pc-los');
+    sizeTicks(svg);
+    const g = svg.querySelector('.satpos');
     const la = r && now >= start && now <= end ? lookAngles(r.satrec, new Date(now)) : null;
     if (la && la.el >= 0) {
       const [x, y] = polarXY(la.az, la.el);
       g.setAttribute('transform', `translate(${x.toFixed(1)},${y.toFixed(1)})`);
       g.removeAttribute('hidden');
       placeSatName(svg, g, x, y);
-      azel.textContent = `AZ ${Math.round(la.az)}°  EL ${Math.round(la.el)}°`;
-      const sec = Math.max(0, Math.round((end - now) / 1000));
-      los.textContent = `${T('los')} ${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
     } else {
       g.setAttribute('hidden', '');
-      azel.textContent = '';
-      if (now < start) {
-        const sec = Math.round((start - now) / 1000);
-        const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s2 = sec % 60;
-        los.textContent = `${T('aos')} ${h ? h + ':' : ''}${String(m).padStart(2, '0')}:${String(s2).padStart(2, '0')}`;
-      } else los.textContent = '';
     }
   }
   scheduleCollisions();
