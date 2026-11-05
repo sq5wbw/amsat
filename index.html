@@ -24,6 +24,7 @@
     --track:   #1d5c8f;
     --plot:    #dab7c9;   /* próba: kolor toru przelotu na wykresie */
     --tick:    #a6206a;
+    --horizon: #5b6d71;
     --live:    #a6206a;
     --live-bg: #f6e3ec;
     --hover:   #e4eae7;
@@ -42,7 +43,8 @@
       --rule:    #2d3c42;
       --track:   #7ab5e6;
       --plot:    #55666c;   /* tor przelotu w trybie ciemnym: stonowana szarość zamiast jasnego fioletu */
-      --tick:    #7a8b91;
+      --tick:    #55666c;   /* w nocy: kółka, tor i obrys tarczy w jednym kolorze */
+      --horizon: #55666c;
       --live:    #a6206a;
       --live-bg: #1c282e;   /* w trybie ciemnym neutralne tło komunikatów */
       --hover:   #1d2b32;
@@ -59,7 +61,8 @@
     --rule:    #2d3c42;
     --track:   #7ab5e6;
     --plot:    #55666c;
-    --tick:    #7a8b91;
+    --tick:    #55666c;
+    --horizon: #55666c;
     --live:    #a6206a;
     --live-bg: #1c282e;   /* w trybie ciemnym neutralne tło komunikatów */
     --hover:   #1d2b32;
@@ -226,7 +229,7 @@
   /* grubość linii w pikselach ekranu, niezależnie od rozmiaru wykresu (telefon = komputer) */
   svg.polar .grid, svg.polar .horizon, svg.polar .track, svg.polar .tick, svg.polar .halo { vector-effect: non-scaling-stroke; }
   svg.polar .grid { fill: none; stroke: var(--rule); stroke-width: 1; }
-  svg.polar .horizon { fill: none; stroke: var(--muted); stroke-width: 1.2; }
+  svg.polar .horizon { fill: none; stroke: var(--horizon); stroke-width: 1.2; }
   svg.polar .card { fill: var(--ink); font-size: 12px; font-weight: 700; font-variation-settings: "MONO" 0; }
   svg.polar .ring { font-size: 8.5px; }
   svg.polar .track { fill: none; stroke: var(--plot); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
