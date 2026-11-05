@@ -936,8 +936,20 @@ function setupPlotRotation() {
   document.addEventListener('pointercancel', end);
   document.addEventListener('dblclick', e => {
     if (compassOn || !(e.target.closest && e.target.closest('svg.polar'))) return;
+    // płynny powrót północy na górę (najkrótszą drogą)
+    const from = plotRot, delta = ((0 - from + 540) % 360) - 180;
     manualRot = 0; store.set('plot_rot', '0');
-    applyRot();
+    if (reduceMotion() || Math.abs(delta) < 0.5) { applyRot(); return; }
+    const t0 = performance.now(), DUR = 600;
+    const ease = x => 1 - Math.pow(1 - x, 3);                 // łagodne wyhamowanie
+    const step = now => {
+      if (compassOn || manualRot !== 0) return;              // przerwane (np. nowe przeciąganie)
+      const k = Math.min(1, (now - t0) / DUR);
+      plotRot = norm(from + delta * ease(k));
+      setPlotRotation(); updateCaptions();
+      if (k < 1) requestAnimationFrame(step); else applyRot();
+    };
+    requestAnimationFrame(step);
   });
   setupCompass();
 }
