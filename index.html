@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#121b20" media="(prefers-color-scheme: dark)">
 <title>SAT° Predictor</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛰️</text></svg>">
+<script>try { const lg = localStorage.getItem('lang'); document.documentElement.lang = lg === 'pl' ? 'pl' : 'en'; } catch (e) { document.documentElement.lang = 'en'; }</script>
 <script>try { const th = localStorage.getItem('theme'); if (th === 'light' || th === 'dark') document.documentElement.dataset.theme = th; } catch (e) {}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -231,6 +232,7 @@
   .times div span { display: block; color: var(--muted); font-size: 12.5px; }
   .times div strong { font-size: 18px; font-weight: 600; }
   .times div em { font-style: normal; color: var(--muted); font-size: 12.5px; margin-left: 6px; }
+  .tarrow { display: none; }
   dl.freq { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 5px 14px; margin: 0; }
   dl.freq dt { color: var(--muted); font-size: 13px; padding-top: 1px; }
   dl.freq dd { margin: 0; }
@@ -240,8 +242,10 @@
 
   /* ---------- wykres nieba ---------- */
   figure.plot { margin: 0; }
-  .plotcap { text-align: center; color: var(--muted); font-size: 12.5px; min-height: 1.4em; margin-top: 2px; font-variation-settings: "MONO" 1; }
-  .plotcap:empty { visibility: hidden; }
+  /* podpis pod tarczą („Rotation: 45°”): stała wysokość, więc nic się nie przesuwa; pojawia się i znika płynnie */
+  .plotcap { text-align: center; color: var(--muted); font-size: 12.5px; height: 1.5em; line-height: 1.5em; margin-top: 2px; font-variation-settings: "MONO" 1;
+    opacity: 0; transform: translateY(-2px); transition: opacity .3s ease, transform .3s ease; }
+  .plotcap.show { opacity: 1; transform: none; }
   svg.polar { width: 100%; max-width: 320px; height: auto; display: block; touch-action: pan-y pinch-zoom; user-select: none; -webkit-user-select: none; margin: 0 auto; }
   svg.polar .hit { cursor: grab; }   /* obracać można tylko tarczę, pole wokół przewija stronę */
   svg.polar.dragging, svg.polar.dragging .hit { cursor: grabbing; }
@@ -347,9 +351,11 @@
     svg.polar .card { font-size: 12px; }
     .times { gap: 4px 22px; }
     .times div em { display: block; margin-left: 0; }
-    .times { grid-template-columns: repeat(3, 1fr); width: 100%; }
-    .times div:nth-child(2) { text-align: center; }
-    .times div:nth-child(3) { text-align: right; }
+    .times { display: flex; justify-content: space-between; width: 100%; }   /* równe odstępy: godzina → godzina → godzina */
+    .times div:nth-of-type(2) { text-align: center; }
+    .times div:nth-of-type(3) { text-align: right; }
+    /* strzałki AOS → Max → LOS na wysokości godzin, jak w linijce azymutów */
+    .tarrow { display: block; padding-top: 18.75px; line-height: 27px; font-size: 16px; color: var(--muted); }
   }
   @media (min-width: 721px) {
     .row .info { display: contents; }
@@ -372,27 +378,27 @@
     <button class="theme theme-m" type="button"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><g class="ic-half"><circle cx="12" cy="12" r="7.5" fill="none" stroke="var(--ink)" stroke-width="1.5"/><path d="M12 4.5a7.5 7.5 0 0 0 0 15z" fill="var(--ink)"/></g></svg></button>
     <div class="elrow">
       <input type="range" id="minel" min="0" max="45" step="1" value="0" data-i18n-aria="minElAria">
-      <label for="minel" class="elval"><span data-i18n="minEl">Min. el.</span> <b class="num" id="minelv">0°</b></label>
+      <label for="minel" class="elval"><span data-i18n="minEl"></span> <b class="num" id="minelv">0°</b></label>
     </div>
-    <span id="compasswrap" class="tog" hidden><label for="compass" data-i18n="compass">Kompas:</label><button class="switch" id="compass" role="switch" aria-checked="false" data-i18n-aria="compassAria"></button></span>
+    <span id="compasswrap" class="tog" hidden><label for="compass" data-i18n="compass"></label><button class="switch" id="compass" role="switch" aria-checked="false" data-i18n-aria="compassAria"></button></span>
   </div>
 </header>
 
-<main class="list" id="list"><p class="empty" data-i18n="computing">Liczę przeloty…</p></main>
+<main class="list" id="list"><p class="empty" data-i18n="computing"></p></main>
 <div class="more" id="more" hidden><button id="morebtn" class="morebtn"><span class="mb-label"></span><span class="mb-num num" aria-hidden="true"><span class="mb-d"><span>1</span></span><span class="mb-d"><span>0</span></span></span><span class="mb-unit"></span></button></div>
 
 <footer class="data">
   <div id="tleinfo"></div>
   <div class="actions">
-    <button id="reload" data-i18n="reload">Odśwież dane TLE</button>
-    <a id="dltle" href="https://www.amsat.org/tle/current/nasabare.txt" download="nasabare.txt" target="_blank" rel="noopener" data-i18n-title="downloadTitle" data-i18n="download">Pobierz plik TLE</a>
-    <label class="btn" for="tlefile2" tabindex="0" data-i18n="load">Wczytaj plik TLE</label><input type="file" id="tlefile2" multiple accept=".txt,.tle,text/plain" hidden>
+    <button id="reload" data-i18n="reload"></button>
+    <a id="dltle" href="https://www.amsat.org/tle/current/nasabare.txt" download="nasabare.txt" target="_blank" rel="noopener" data-i18n-title="downloadTitle" data-i18n="download"></a>
+    <label class="btn" for="tlefile2" tabindex="0" data-i18n="load"></label><input type="file" id="tlefile2" multiple accept=".txt,.tle,text/plain" hidden>
   </div>
   <div id="tlefail" class="notice" hidden>
-    <p data-i18n="failHead">Nie udało się pobrać danych orbitalnych automatycznie.</p>
+    <p data-i18n="failHead"></p>
     <ol>
       <li data-i18n-html="failStep1"></li>
-      <li><span data-i18n="failStep2">Wczytaj go tutaj (możesz zaznaczyć kilka plików):</span> <input type="file" id="tlefile" multiple accept=".txt,.tle,text/plain"></li>
+      <li><span data-i18n="failStep2"></span> <input type="file" id="tlefile" multiple accept=".txt,.tle,text/plain"></li>
     </ol>
   </div>
   <div class="satbox">
@@ -774,14 +780,16 @@ function detailsHTML(p) {
   return `<div class="det-grid"><div>` +
     `<div class="times">` +
       `<div><span>${T('rise')}</span><strong class="num">${hhmm(p.start)}</strong><em class="num">az ${p.azRise}°</em></div>` +
+      `<span class="tarrow num" aria-hidden="true">→</span>` +
       `<div><span>${T('peak')}</span><strong class="num">${hhmm(p.peak)}</strong><em class="num">el ${p.elMax}°</em></div>` +
+      `<span class="tarrow num" aria-hidden="true">→</span>` +
       `<div><span>${T('set')}</span><strong class="num">${hhmm(p.end)}</strong><em class="num">az ${p.azSet}°</em></div>` +
     `</div>` +
     `<dl class="freq">` +
       row(T('down'), TD(s.down), 'num') + row(T('up'), TD(s.up), 'num') + row(T('beacon'), TD(s.beacon), 'num') +
       row(T('type'), TD(s.type || s.mode)) + (s.note ? row(T('note'), TD(s.note), 'note') : '') +
     `</dl>` +
-    `</div><figure class="plot">${polarSVG(p)}<figcaption class="plotcap">${esc(rotLabel())}</figcaption></figure></div>` +
+    `</div><figure class="plot">${polarSVG(p)}<figcaption class="plotcap${rotLabel() ? ' show' : ''}">${esc(rotLabel())}</figcaption></figure></div>` +
     `<div class="tle">TLE: ${esc(r ? r.tleName || '-' : '-')}, <a href="https://www.n2yo.com/satellite/?s=${s.norad}#results" target="_blank" rel="noopener" title="${T('n2yo')}">NORAD ${s.norad}</a>, ${T('age')} ${age} d</div>`;
 }
 
@@ -866,7 +874,10 @@ function setPlotRotation() {
 }
 function updateCaptions() {
   const rl = rotLabel(), tip = compassOn ? T('plotTipCompass') : T('plotTip');
-  for (const c of document.querySelectorAll('.plotcap')) if (c.textContent !== rl) c.textContent = rl;
+  for (const c of document.querySelectorAll('.plotcap')) {
+    if (rl && c.textContent !== rl) c.textContent = rl;   // pusty napis: zostaw stary tekst, żeby mógł płynnie zgasnąć
+    c.classList.toggle('show', !!rl);
+  }
   for (const ti of document.querySelectorAll('svg.polar > title')) if (ti.textContent !== tip) ti.textContent = tip;
 }
 function redrawPlots() {
