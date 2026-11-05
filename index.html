@@ -1166,7 +1166,7 @@ function placeSatName(svg, g, x, y) {
   if (tx.getAttribute('x') !== dx.toFixed(1)) tx.setAttribute('x', dx.toFixed(1));
   if (tx.getAttribute('y') !== String(dy)) tx.setAttribute('y', String(dy));
 }
-// kolizje napisów na wykresie: 1. nazwa satelity, 2. godziny, 3. kierunki N/E/S/W i stopnie (30°, 60°).
+// kolizje napisów na wykresie: 1. nazwa i kropka satelity, 2. godziny, 3. kierunki N/E/S/W i stopnie (30°, 60°).
 // Gdy napis wyższego planu zbliża się do niższego, niższy stopniowo wygasa (0 przy zetknięciu, pełny przy odstępie ≥ FADE px).
 const FADE = 8;
 function rectGap(a, b) {
@@ -1179,7 +1179,9 @@ function resolveCollisions(svg) {
   const sat = svg.querySelector('.satpos:not([hidden]) .satname');
   const times = [...svg.querySelectorAll('.tlabel')], rings = [...svg.querySelectorAll('.ring, .card')];
   const R = el => el.getBoundingClientRect();
-  const satR = sat && sat.textContent ? [R(sat)] : [];
+  const dot = svg.querySelector('.satpos:not([hidden]) .satdot');
+  const grow = (r, k) => ({ left: r.left - k, right: r.right + k, top: r.top - k, bottom: r.bottom + k });
+  const satR = (sat && sat.textContent ? [R(sat)] : []).concat(dot ? [grow(R(dot), 4)] : []);   // plan 1: nazwa i kropka satelity (z zapasem na poświatę)
   const timeR = times.map(R), ringR = rings.map(R);
   const vis = (rect, above) => above.reduce((o, r) => Math.min(o, rectGap(rect, r) / FADE), 1);
   const timeOp = timeR.map(r => Math.min(1, vis(r, satR)));
