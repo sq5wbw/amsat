@@ -1203,7 +1203,7 @@ function resolveCollisions(svg) {
   const R = el => { const r = el.getBoundingClientRect(), k = r.height * 0.2; return { left: r.left, right: r.right, top: r.top + k, bottom: r.bottom - k }; };
   const dot = svg.querySelector('.satpos:not([hidden]) .satdot');
   const grow = (r, k) => ({ left: r.left - k, right: r.right + k, top: r.top - k, bottom: r.bottom + k });
-  const satR = (sat && sat.textContent ? [R(sat)] : []).concat(dot ? [grow(dot.getBoundingClientRect(), 1.5)] : []);   // plan 1: nazwa i kropka satelity (z zapasem na poświatę)
+  const satR = (sat && sat.textContent ? [R(sat)] : []).concat(dot ? [dot.getBoundingClientRect()] : []);   // plan 1: nazwa i kropka satelity (poświata nie koliduje)
   const minGap = (rect, above) => above.reduce((g, r) => Math.min(g, rectGap(rect, r)), Infinity);
   const timeR = times.map(R);
   // godziny między sobą: AOS > LOS > Max (krótkie, niskie przeloty – wszystkie trzy w jednym miejscu)
