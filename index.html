@@ -46,7 +46,7 @@
   }
 
   *, *::before, *::after { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
+  html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }   /* bez niebieskiego „podświetlenia stuknięcia” na Androidzie – aplikacja ma własne reakcje na dotyk */
   html, body { margin: 0; background: var(--paper); color: var(--ink); }
   body {
     font: 15px/1.5 var(--sans);
