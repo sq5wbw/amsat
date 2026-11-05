@@ -243,8 +243,14 @@
   /* ---------- wykres nieba ---------- */
   figure.plot { margin: 0; }
   /* podpis w prawym górnym rogu wykresu („Rotation: 96°”) – pojawia się i znika płynnie */
-  svg.polar .rotcap { opacity: 0; transition: opacity .3s ease; }
-  svg.polar .rotcap.show { opacity: 1; }
+  /* napisy w rogach wykresu (stopnie obrotu, AZ/EL, AOS/LOS in): wyrównane do krawędzi kolumny,
+     dokładnie w linii z „AOS” i „LOS” w wierszu godzin */
+  figure.plot { position: relative; }
+  .pc { position: absolute; font-size: 11px; line-height: 1; color: var(--ink); font-variation-settings: "MONO" 1; font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none; }
+  .pc-rot { top: var(--pc-top, 6.7px); right: 0; opacity: 0; transition: opacity .3s ease; }
+  .pc-rot.show { opacity: 1; }
+  .pc-azel { bottom: 0; left: 0; }
+  .pc-los { bottom: 0; right: 0; }
   svg.polar { width: 100%; max-width: 320px; height: auto; display: block; touch-action: pan-y pinch-zoom; user-select: none; -webkit-user-select: none; margin: 0 auto; }
   svg.polar .hit { cursor: grab; }   /* obracać można tylko tarczę, pole wokół przewija stronę */
   svg.polar.dragging, svg.polar.dragging .hit { cursor: grabbing; }
@@ -350,7 +356,9 @@
     svg.polar .card { font-size: 12px; }
     .times { gap: 4px 22px; }
     .times div em { display: block; margin-left: 0; }
-    .times { display: flex; justify-content: space-between; width: 100%; }   /* równe odstępy: godzina → godzina → godzina */
+    .times { display: flex; justify-content: space-between; width: 100%; }
+    .pc { font-size: 13px; }
+    .pc-rot { --pc-top: 6px; }   /* odstęp od góry panelu = odstęp od prawej krawędzi */   /* równe odstępy: godzina → godzina → godzina */
     .times div:nth-of-type(2) { text-align: center; }
     .times div:nth-of-type(3) { text-align: right; }
     /* strzałki AOS → Max → LOS na wysokości godzin, jak w linijce azymutów */
@@ -788,7 +796,7 @@ function detailsHTML(p) {
       row(T('down'), TD(s.down), 'num') + row(T('up'), TD(s.up), 'num') + row(T('beacon'), TD(s.beacon), 'num') +
       row(T('type'), TD(s.type || s.mode)) + (s.note ? row(T('note'), TD(s.note), 'note') : '') +
     `</dl>` +
-    `</div><figure class="plot">${polarSVG(p)}</figure></div>` +
+    `</div><figure class="plot">${polarSVG(p)}<span class="pc pc-rot${rotLabel() ? ' show' : ''}">${esc(capParts(rotLabel()).val)}</span><span class="pc pc-azel"></span><span class="pc pc-los"></span></figure></div>` +
     `<div class="tle">TLE: ${esc(r ? r.tleName || '-' : '-')}, <a href="https://www.n2yo.com/satellite/?s=${s.norad}#results" target="_blank" rel="noopener" title="${T('n2yo')}">NORAD ${s.norad}</a>, ${T('age')} ${age} d</div>`;
 }
 
@@ -856,12 +864,6 @@ function polarInner(p) {
   s += `<g class="satpos" hidden><circle class="halo" r="8" style="animation-delay:-${Date.now() % 1800}ms"/><circle class="satdot" r="4"/>` +
        `<g class="nm" transform="rotate(${f(-plotRot)})"><text class="satname" x="0" y="-12" text-anchor="middle">${esc(p.sat.name)}</text></g></g>`;
   s += `</g>`;
-  const v = plotBox(), L = v.x + 4, R = v.x + v.w - 4, B = v.y + v.h - 6;
-  s += `<text class="info" data-k="azel" x="${L}" y="${B}"></text><text class="info" data-k="los" x="${R}" y="${B}" text-anchor="end"></text>`;
-  // prawy górny róg: „Rotation: 96°” / „Declination: +7°” – etykieta i liczba osobno, więc 99° → 100° nic nie przesuwa
-  const cap = capParts(rotLabel());
-  s += `<g class="rotcap${cap.on ? ' show' : ''}"><text class="info" data-k="caplbl" x="${R - 27}" y="${v.y + 12.3}" text-anchor="end">${esc(cap.lbl)}</text>` +
-       `<text class="info" data-k="capval" x="${R}" y="${v.y + 12.3}" text-anchor="end">${esc(cap.val)}</text></g>`;
   return s;
 }
 // szybki obrót wszystkich wykresów: tylko atrybuty transform, bez przebudowy SVG (płynne 60 fps)
@@ -878,13 +880,9 @@ function setPlotRotation() {
 function updateCaptions() {
   const rl = rotLabel(), tip = compassOn ? T('plotTipCompass') : T('plotTip');
   const cp = capParts(rl);
-  for (const g of document.querySelectorAll('svg.polar g.rotcap')) {
-    if (cp.on) {                               // pusty napis: zostaw stary tekst, żeby mógł płynnie zgasnąć
-      const l = g.querySelector('[data-k=caplbl]'), v = g.querySelector('[data-k=capval]');
-      if (cp.val === cp.lbl + cp.val || !cp.lbl) { l.textContent = ''; v.textContent = cp.val; }
-      else { if (l.textContent !== cp.lbl) l.textContent = cp.lbl; if (v.textContent !== cp.val) v.textContent = cp.val; }
-    }
-    g.classList.toggle('show', cp.on);
+  for (const el of document.querySelectorAll('.pc-rot')) {
+    if (cp.on && el.textContent !== cp.val) el.textContent = cp.val;   // pusty napis: zostaw stary tekst, żeby mógł płynnie zgasnąć
+    el.classList.toggle('show', cp.on);
   }
   for (const ti of document.querySelectorAll('svg.polar > title')) if (ti.textContent !== tip) ti.textContent = tip;
 }
@@ -1137,7 +1135,7 @@ function updatePlots() {
     if (svg.closest('.det:not(.open)')) continue;
     const r = satrecs.find(x => x.sat.name === svg.dataset.sat);
     const start = +svg.dataset.start, end = +svg.dataset.end;
-    const g = svg.querySelector('.satpos'), azel = svg.querySelector('[data-k=azel]'), los = svg.querySelector('[data-k=los]');
+    const fig = svg.parentElement, g = svg.querySelector('.satpos'), azel = fig.querySelector('.pc-azel'), los = fig.querySelector('.pc-los');
     const la = r && now >= start && now <= end ? lookAngles(r.satrec, new Date(now)) : null;
     if (la && la.el >= 0) {
       const [x, y] = polarXY(la.az, la.el);
