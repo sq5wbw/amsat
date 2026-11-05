@@ -1151,6 +1151,19 @@ function setupCompass() {
 }
 
 
+// nazwa satelity nad kropką – przesunięta tak, by nigdy nie wychodziła poza wykres (długie nazwy przy krawędzi)
+function placeSatName(svg, g, x, y) {
+  const tx = g.querySelector('.satname'); if (!tx) return;
+  const w = tx.getComputedTextLength(); if (!w) return;
+  const vb = svg.viewBox.baseVal, a = plotRot * Math.PI / 180;
+  const sx = PC + (x - PC) * Math.cos(a) - (y - PC) * Math.sin(a);      // pozycja kropki na ekranie (po obrocie)
+  const sy = PC + (x - PC) * Math.sin(a) + (y - PC) * Math.cos(a);
+  const pad = 3, minX = vb.x + pad + w / 2, maxX = vb.x + vb.width - pad - w / 2;
+  const dx = Math.max(minX, Math.min(maxX, sx)) - sx;
+  const dy = sy - 22 < vb.y + pad ? 22 : -12;                            // przy górnej krawędzi – pod kropką
+  if (tx.getAttribute('x') !== dx.toFixed(1)) tx.setAttribute('x', dx.toFixed(1));
+  if (tx.getAttribute('y') !== String(dy)) tx.setAttribute('y', String(dy));
+}
 function updatePlots() {
   const now = Date.now();
   for (const svg of document.querySelectorAll('svg.polar')) {
@@ -1163,6 +1176,7 @@ function updatePlots() {
       const [x, y] = polarXY(la.az, la.el);
       g.setAttribute('transform', `translate(${x.toFixed(1)},${y.toFixed(1)})`);
       g.removeAttribute('hidden');
+      placeSatName(svg, g, x, y);
       azel.textContent = `AZ ${Math.round(la.az)}°  EL ${Math.round(la.el)}°`;
       const sec = Math.max(0, Math.round((end - now) / 1000));
       los.textContent = `${T('los')} ${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
