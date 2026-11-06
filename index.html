@@ -1478,7 +1478,7 @@ function animateOut(els) {
 // Pojawianie: łagodne rozjaśnienie z lekkim wjazdem od góry.
 function animateIn(el, delay = 0) {
   if (reduceMotion()) return;
-  el.animate([{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'none' }], { duration: 380, easing: EASE, delay, fill: 'backwards' });
+  el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 360, easing: 'ease-out', delay, fill: 'backwards' });
 }
 // Przesunięcie: elementy, które zmieniły miejsce, płynnie dojeżdżają z poprzedniej pozycji do nowej.
 function flipFrom(before, delay = 0) {
@@ -1571,7 +1571,8 @@ function draw() {
   flipFrom(before, gap);
   // nowe wiersze pojawiają się dopiero, gdy pozostałe zrobiły już dla nich miejsce – nic na siebie nie nachodzi
   const moved = [...before.keys()].some(el => el.isConnected);
-  entered.forEach((el, i) => animateIn(el, gap + (moved ? 300 : 0) + Math.min(i, 12) * 35));
+  // start, gdy przesuwane wiersze przebyły już większość drogi (krzywa EASE: ~70% po 170 ms) – bez pustej „dziury” i bez nachodzenia
+  entered.forEach((el, i) => animateIn(el, gap + (moved ? 170 : 0) + Math.min(i, 12) * 30));
   updateEtas(now);
   updatePositions();
   updatePlots();
