@@ -1,17 +1,37 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#eef1ee" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121b20" media="(prefers-color-scheme: dark)">
-<title>SAT° Predictor</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛰️</text></svg>">
+<title>SAT° Predictor – amateur radio satellite pass predictor</title>
+<meta name="description" content="Free amateur radio satellite pass predictor in your browser: 24-hour pass list for your grid locator, live QRV status, sky plot with phone compass and frequencies for about 40 ham satellites (FM, SSB, digital).">
+<meta name="keywords" content="amateur radio, ham radio, satellite, pass prediction, satellite tracker, AMSAT, TLE, AOS, LOS, grid locator, SO-50, ISS, FO-29, RS-44">
+<meta name="author" content="SQ5WBW">
+<meta name="application-name" content="SAT° Predictor">
+<meta name="apple-mobile-web-app-title" content="SAT° Predictor">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://sq5wbw.github.io/satpredictor/">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Cstyle%3E.s%7Bfill:%23172630%7D%40media (prefers-color-scheme:dark)%7B.s%7Bfill:%23dce5e2%7D%7D%3C/style%3E%3Cpath class=%22s%22 transform=%22translate(-0.37 56.66) scale(0.07046 -0.07046)%22 d=%22M321 719Q391 719 441.0 702.5Q491 686 514 663Q518 659 519.0 655.0Q520 651 520 645Q520 626 520.0 602.0Q520 578 520.0 554.0Q520 530 520 507Q492 507 462.0 507.0Q432 507 403 507Q398 507 395.0 510.0Q392 513 392 518Q392 528 392.0 538.0Q392 548 392.0 559.5Q392 571 392.0 584.0Q392 597 392 613L420 577Q396 588 373.5 592.5Q351 597 321 597Q292 597 270.5 593.0Q249 589 234.0 579.5Q219 570 211.0 555.5Q203 541 203 521V500Q203 481 209.5 467.0Q216 453 233.5 443.0Q251 433 286 422L382 393Q428 379 459.5 362.5Q491 346 509.0 325.0Q527 304 535.0 277.0Q543 250 543 215V169Q543 111 512.0 68.5Q481 26 422.5 3.5Q364 -19 282 -19Q234 -19 191.5 -13.0Q149 -7 117.5 5.5Q86 18 68 34Q65 37 63.5 40.5Q62 44 62 53Q62 71 62.0 88.0Q62 105 62.0 124.0Q62 143 62 163H81Q126 133 175.0 118.5Q224 104 291 104Q353 104 381.5 124.0Q410 144 410 172V206Q410 223 404.5 234.5Q399 246 382.0 256.5Q365 267 328 277L233 306Q184 321 152.0 340.5Q120 360 102.5 382.0Q85 404 77.5 429.5Q70 455 70 483V531Q70 572 87.5 606.5Q105 641 138.0 666.5Q171 692 217.5 705.5Q264 719 321 719Z%22/%3E%3Ccircle cx=%2252%22 cy=%2214.5%22 r=%226.6%22 fill=%22none%22 stroke=%22%23a6206a%22 stroke-width=%224.4%22/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<!-- podgląd linku (Facebook, Messenger, WhatsApp, LinkedIn, X) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SAT° Predictor">
+<meta property="og:title" content="SAT° Predictor">
+<meta property="og:description" content="Amateur radio satellite passes for your location: pass list, live QRV status, sky plot and frequencies.">
+<meta property="og:url" content="https://sq5wbw.github.io/satpredictor/">
+<meta property="og:locale" content="en_GB">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta name="twitter:card" content="summary">   <!-- obrazek podglądu (og:image) zostanie dodany później -->
+<meta name="twitter:title" content="SAT° Predictor">
+<meta name="twitter:description" content="Amateur radio satellite passes for your location.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"SAT° Predictor","url":"https://sq5wbw.github.io/satpredictor/","description":"Free amateur radio satellite pass predictor in your browser: 24-hour pass list for your grid locator, live QRV status, sky plot with phone compass and frequencies for about 40 ham satellites (FM, SSB, digital).","applicationCategory":"UtilitiesApplication","operatingSystem":"Any (web browser)","inLanguage":["en","pl"],"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"SQ5WBW"}}</script>
 <script>try { const lg = localStorage.getItem('lang'); document.documentElement.lang = lg === 'pl' ? 'pl' : 'en'; } catch (e) { document.documentElement.lang = 'en'; }</script>
 <script>try { const th = localStorage.getItem('theme'); if (th === 'light' || th === 'dark') document.documentElement.dataset.theme = th; } catch (e) {}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Recursive:wght,CASL,MONO@300..800,0..1,0..1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Recursive:slnt,wght,CASL,CRSV,MONO@-15..0,300..800,0..1,0..1,0..1&display=swap" rel="stylesheet">
 <style>
   /* Paleta inspirowana mapą nawigacyjną: blady papier, granatowy tusz,
      niebieski tor przelotu i magenta dla tego, co dzieje się teraz. */
@@ -92,8 +112,9 @@
   html.theme-anim .theme .ic-half { transition-property: transform !important; }   /* obrót ikony ◐ zostaje */
 
   *, *::before, *::after { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }   /* bez niebieskiego „podświetlenia stuknięcia” na Androidzie – aplikacja ma własne reakcje na dotyk */
-  html, body { margin: 0; background: var(--paper); color: var(--ink); }
+  html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }   /* manipulation: bez powiększania podwójnym stuknięciem (przesuwanie i powiększanie dwoma palcami zostają) */   /* bez niebieskiego „podświetlenia stuknięcia” na Androidzie – aplikacja ma własne reakcje na dotyk */
+  html, body { margin: 0; background: var(--paper); color: var(--ink); touch-action: manipulation; }
+  button, a, label, input, .row, .seg, .switch, #minel { touch-action: manipulation; }   /* szybkie stuknięcia bez powiększania (kompas ma własne ustawienia) */
   body {
     font: 15px/1.5 var(--sans);
     font-variation-settings: "MONO" 0, "CASL" 0;
@@ -164,7 +185,7 @@
   @media (prefers-reduced-motion: reduce) { .switch, .switch::after { transition: none; } }
 
   /* ---------- lista przelotów ---------- */
-  .list { margin-top: 18px; }
+  .list { margin-top: 18px; position: relative; }
   .cols, .row {
     display: grid;
     grid-template-columns: 46px minmax(110px, 236px) minmax(64px, 1fr) minmax(70px, 1fr) minmax(90px, 1.2fr) minmax(56px, .8fr) minmax(220px, 2fr);
@@ -305,6 +326,7 @@
   @media (prefers-reduced-motion: reduce) { .theme .ic-half { transition: none; } }
   @media (hover: hover) { .theme:hover { background: var(--hover); } }
   .theme-m { display: none; }
+  .theme-w { display: inline-flex; margin-right: 4px; }
   .lang-foot { display: none; }
   .notice { margin-top: 12px; padding: 10px 12px; border-left: 3px solid var(--live); background: var(--live-bg); color: var(--ink); border-radius: 0 4px 4px 0; }
   .notice p { margin: 0 0 4px; }
@@ -316,19 +338,27 @@
   #satlist a:hover { text-decoration: underline; text-underline-offset: 2px; }
   #satlist a.missing { color: var(--muted); }
   .empty { padding: 18px 12px; color: var(--muted); }
+  .empty.loading { animation: ldpulse 1.4s ease-in-out infinite alternate; }
+  @keyframes ldpulse { from { opacity: .45; } to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .empty.loading { animation: none; } }
 
   /* ---------- ekran powitalny: najpierw własny grid ---------- */
-  .welcome { position: fixed; inset: 0; z-index: 50; background: var(--paper); display: flex; flex-direction: column; align-items: center; padding: 24px 20px; overflow-y: auto; }
-  .welcome .w-card { margin: auto 0; }   /* treść wyśrodkowana w pionie, copyright przy samym dole */
-  .w-copy { margin: 52.5px 0 0; font-size: 11.5px; color: var(--muted); text-align: center; }   /* odstęp jak między PL|EN a logo */
-  .w-card { width: 100%; max-width: 360px; padding: 12px 0 24px; display: flex; flex-direction: column; align-items: stretch; }
-  .w-top { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 48px; min-height: 30px; }
-  .w-top .w-close { order: -1; margin-right: auto; margin-left: -8px; }   /* × po lewej, PL | EN przy prawej krawędzi */
+  .welcome { position: fixed; inset: 0; z-index: 50; background: var(--paper); display: flex; flex-direction: column; align-items: center;
+    padding: calc(20px + env(safe-area-inset-top, 0px)) 20px calc(20px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; overflow-x: hidden; }
+  /* górny pasek i copyright przy krawędziach (20 px), blok z logo i gridem wyśrodkowany pomiędzy nimi */
+  .w-top { width: 100%; max-width: 360px; display: flex; justify-content: flex-end; align-items: center; gap: 6px; min-height: 34px; flex: none; }
+  .w-top .w-close { order: -1; margin-right: auto; margin-left: -8px; }
+  .w-card { width: 100%; max-width: 360px; margin: auto 0; padding: 28px 0; display: flex; flex-direction: column; align-items: stretch; }
+  .w-copy { flex: none; margin: 0; font-size: 11.5px; color: var(--muted); text-align: center; }
   .w-close { width: 34px; height: 34px; border: 0; background: none; border-radius: 50%; font-size: 24px; line-height: 1; color: var(--muted); cursor: pointer; }
   @media (hover: hover) { .w-close:hover { color: var(--ink); background: var(--hover); } }
   .lang-w { display: inline-flex; margin-right: -6px; }
   .w-logo { margin: 0; font-size: calc(min(360px, 100vw - 40px) / 7.14); line-height: 1.1; letter-spacing: -0.01em; text-align: center; white-space: nowrap; }   /* zawsze jedna linia – na wąskich ekranach logo się zmniejsza */
-  .w-intro { margin: 22px 0 56px; color: var(--muted); text-align: center; }
+  /* cytat: kursywa Recursive, autor w kolorze akcentu; kolejne cytaty płynnie się zmieniają */
+  .w-quote { margin: 26px 0 34px; text-align: center; position: relative; }
+  .w-quote blockquote { margin: 0; font-size: calc(min(360px, 100vw - 40px) / 17.78); line-height: 1.4;  color: var(--muted); font-variation-settings: "MONO" 0, "CASL" 0, "slnt" -15, "CRSV" 1; font-style: oblique 15deg; }
+  .w-quote cite { font-style: normal; font-variation-settings: "MONO" 0, "CASL" 0, "slnt" 0; color: var(--live); white-space: nowrap; }
+  .w-quote .wq-q { font-style: inherit; }
   .w-label { color: var(--ink); font-weight: 600; font-size: 13.5px; margin-bottom: 12px; }   /* jak „Use my location (GPS)” */
   .w-input { width: 100%; font: 600 32px/1.2 var(--sans); font-variation-settings: "MONO" 1; letter-spacing: .02em; text-align: center; text-transform: uppercase;
     padding: 14px 12px; border: 1.5px solid var(--rule); border-radius: 8px; background: var(--surface); color: var(--ink); transition: border-color .2s ease; }
@@ -391,6 +421,8 @@
   }
   @media (max-width: 350px) { .row .info { font-size: 12px; gap: 4px; } }   /* bardzo wąskie telefony: dolna linijka nadal w jednym wierszu */
   @media (min-width: 721px) {
+    figure.plot { margin-top: 5px; }   /* komputer: równy odstęp nad „N” i pod „S” (do linii TLE) */
+    .tle { margin-top: 10.3px; }
     .row .info { display: contents; }
   }
 </style>
@@ -444,17 +476,21 @@
 </div>
 
 <div class="welcome" id="welcome" hidden role="dialog" aria-modal="true" aria-labelledby="wTitle">
+  <div class="w-top">
+    <button class="w-close" id="wClose" type="button" data-i18n-aria="wClose">×</button>
+    <button class="theme theme-w" type="button"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><g class="ic-half"><circle cx="12" cy="12" r="7.5" fill="none" stroke="var(--ink)" stroke-width="1.5"/><path d="M12 4.5a7.5 7.5 0 0 0 0 15z" fill="var(--ink)"/></g></svg></button>
+    <div class="lang lang-w" role="group" data-i18n-aria="langGroup"><button data-lang="pl" lang="en">POLISH</button><button data-lang="en" lang="en">ENGLISH</button></div>
+  </div>
   <div class="w-card">
-    <div class="w-top"><div class="lang lang-w" role="group" data-i18n-aria="langGroup"><button data-lang="pl" lang="en">POLISH</button><button data-lang="en" lang="en">ENGLISH</button></div><button class="w-close" id="wClose" type="button" data-i18n-aria="wClose">×</button></div>
     <h1 class="w-logo" id="wTitle">SAT<span class="mark" aria-hidden="true">°</span> Predictor</h1>
-    <p class="w-intro" data-i18n-html="wIntro"></p>
+    <figure class="w-quote" id="wQuote" aria-live="off"><blockquote class="wq-in"></blockquote></figure>
     <label class="w-label" for="wGrid" data-i18n="wLabel"></label>
     <input class="w-input" id="wGrid" type="text" maxlength="6" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="KO02OC" aria-describedby="wHint">
     <p class="w-hint" id="wHint" aria-live="polite"></p>
     <button class="w-go" id="wGo" type="button" data-i18n="wGo"></button>
     <button class="w-gps" id="wGps" type="button" data-i18n="wGps"></button>
-    <p class="w-copy">© SAT° Predictor by SQ5WBW</p>
   </div>
+  <p class="w-copy">© SAT° Predictor by SQ5WBW</p>
 </div>
 
 <script>
@@ -598,13 +634,11 @@ function parseTLE(text) {
 }
 
 async function fetchTLE() {
-  let text = '';
-  for (const url of TLE_URLS) {
-    try {
-      const r = await fetch(url, { cache: 'no-store' });
-      if (r.ok) text += '\n' + await r.text();
-    } catch (e) {}
-  }
+  // wszystkie źródła naraz (równolegle), żeby dane były gotowe jak najszybciej
+  const parts = await Promise.all(TLE_URLS.map(async url => {
+    try { const r = await fetch(url, { cache: 'no-store' }); return r.ok ? await r.text() : ''; } catch (e) { return ''; }
+  }));
+  let text = '\n' + parts.join('\n');
   // satelity, których nie ma w plikach zbiorczych – dociągnij pojedynczo z CelesTrak po numerze NORAD
   const have = parseTLE(text);
   const missing = SATS.filter(s => !have[s.norad]).map(s => s.norad);
@@ -781,6 +815,7 @@ function applyLang() {
   for (const el of document.querySelectorAll('[data-i18n-title]')) el.title = T(el.dataset.i18nTitle);
   for (const el of document.querySelectorAll('[data-i18n-aria]')) el.setAttribute('aria-label', T(el.dataset.i18nAria));
   for (const b of document.querySelectorAll('.lang button')) b.setAttribute('aria-pressed', String(b.dataset.lang === lang));
+  if (typeof showQuote === 'function' && document.getElementById('wQuote') && !document.getElementById('welcome').hidden) { sizeQuote(); showQuote(false); }
   const wh = document.getElementById('wHint'), wl = document.getElementById('welcome');
   if (wh && wl && !wl.hidden && !wh.classList.contains('err') && typeof setHint === 'function') setHint(T('wHint'));
   if (typeof syncThemeUI === 'function' && document.querySelector('.theme')) syncThemeUI();
@@ -794,6 +829,7 @@ let satrecs = [];      // {sat, satrec, tleName, epoch}
 let passes = [];
 let openRows = new Set();
 let lastCalc = 0;
+let tleLoading = false;   // trwa pobieranie danych TLE (ekran powitalny już je pobiera w tle)
 
 const $ = id => document.getElementById(id);
 const pad2 = n => String(n).padStart(2, '0');
@@ -1384,33 +1420,35 @@ function renderRow(e, now) {
 }
 
 // znikanie: wiersz (i otwarte szczegóły) płynnie się zwija i wygasa
+// Animacje listy techniką FLIP: tylko przezroczystość i przesunięcie (transform) – bez animowania wysokości,
+// więc przeglądarka nie przelicza układu strony w każdej klatce i nic się nie przycina na telefonie.
+// Znikanie: wiersz zostaje „w powietrzu” w swoim miejscu (poza układem) i wygasa.
 function animateOut(els) {
-  for (const el of els) {
-    if (!el || !el.isConnected) continue;
+  const list = $('list'), lb = list.getBoundingClientRect();
+  const items = els.filter(el => el && el.isConnected).map(el => ({ el, r: el.getBoundingClientRect() }));   // najpierw pomiar wszystkich
+  for (const { el, r } of items) {
     el.inert = true;
     el.classList.add('leaving');
-    if (reduceMotion()) { el.remove(); continue; }
-    const h = el.getBoundingClientRect().height;
-    el.style.overflow = 'hidden';
-    const a = el.animate([
-      { height: `${h}px`, opacity: 1 },
-      { height: `${h}px`, opacity: 0, offset: .45 },
-      { height: '0px', opacity: 0, paddingTop: '0px', paddingBottom: '0px', borderBottomWidth: '0px' },
-    ], { duration: 520, easing: 'ease-in-out', fill: 'forwards' });
+    if (reduceMotion() || r.height < 1) { el.remove(); continue; }
+    Object.assign(el.style, { position: 'absolute', left: `${r.left - lb.left}px`, top: `${r.top - lb.top}px`, width: `${r.width}px`, height: `${r.height}px`, margin: '0', zIndex: '0' });
+    const a = el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 180, easing: 'ease-out', fill: 'forwards' });
     a.onfinish = () => el.remove();
   }
 }
-// pojawianie: wiersz łagodnie się rozsuwa i rozjaśnia
+// Pojawianie: łagodne rozjaśnienie z lekkim wjazdem od góry.
 function animateIn(el, delay = 0) {
   if (reduceMotion()) return;
-  const h = el.getBoundingClientRect().height;
-  el.style.overflow = 'hidden';
-  const a = el.animate([
-    { height: '0px', opacity: 0, paddingTop: '0px', paddingBottom: '0px' },
-    { height: `${h}px`, opacity: 0, offset: .5 },
-    { height: `${h}px`, opacity: 1 },
-  ], { duration: 520, easing: EASE, delay, fill: 'backwards' });
-  a.onfinish = () => { el.style.overflow = ''; };
+  el.animate([{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'none' }], { duration: 380, easing: EASE, delay, fill: 'backwards' });
+}
+// Przesunięcie: elementy, które zmieniły miejsce, płynnie dojeżdżają z poprzedniej pozycji do nowej.
+function flipFrom(before, delay = 0) {
+  if (reduceMotion()) return;
+  for (const [el, top] of before) {
+    if (!el.isConnected || el.classList.contains('leaving')) continue;
+    const dy = top - el.getBoundingClientRect().top;
+    if (Math.abs(dy) < 0.5) continue;
+    el.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: 420, delay, easing: EASE, composite: 'add', fill: 'backwards' });
+  }
 }
 
 function draw() {
@@ -1423,7 +1461,7 @@ function draw() {
   updateMore(matching.length, shown.length);
   if (!shown.length) {
     rowEls.clear();
-    list.innerHTML = `<p class="empty">${T(satrecs.length ? 'noPasses' : 'noTLE')}</p>`;
+    list.innerHTML = `<p class="empty${tleLoading && !satrecs.length ? ' loading' : ''}">${T(satrecs.length ? 'noPasses' : (tleLoading ? 'tleLoading' : 'noTLE'))}</p>`;
     return;
   }
   const first = !list.querySelector('.cols');
@@ -1439,6 +1477,13 @@ function draw() {
     head._lang = lang;
   }
 
+  // FLIP: zapamiętaj położenie wierszy i elementów pod listą przed zmianą
+  const before = new Map();
+  if (!first) {
+    for (const e of rowEls.values()) { before.set(e.row, e.row.getBoundingClientRect().top); before.set(e.det, e.det.getBoundingClientRect().top); }
+    for (const el of [$('more'), document.querySelector('footer.data')]) if (el && !el.hidden) before.set(el, el.getBoundingClientRect().top);
+  }
+
   // dopasuj przeliczone przeloty do istniejących wierszy (ten sam satelita, wschód różni się < 1 min)
   const idOf = new Map();
   for (const p of shown) {
@@ -1451,9 +1496,11 @@ function draw() {
     idOf.set(p, id);
   }
   const ids = new Set(idOf.values());
+  const leaving = [];
   for (const [id, e] of rowEls) {
-    if (!ids.has(id)) { animateOut([e.row, e.det]); rowEls.delete(id); }
+    if (!ids.has(id)) { leaving.push(e.row, e.det); rowEls.delete(id); before.delete(e.row); before.delete(e.det); }
   }
+  if (leaving.length) animateOut(leaving);
 
   const activeCount = shown.filter(p => now >= p.start).length || 1;
   let activeIdx = 0, prev = head;
@@ -1479,7 +1526,10 @@ function draw() {
     prev = e.det;
     if (isNew && !first) entered.push(e.row);
   }
-  entered.forEach((el, i) => animateIn(el, Math.min(i, 12) * 45));   // kaskada przy doładowaniu
+  // kolejność: najpierw znikające wygasają, potem reszta przesuwa się na nowe miejsca, na końcu pojawiają się nowe
+  const gap = leaving.length ? 140 : 0;
+  flipFrom(before, gap);
+  entered.forEach((el, i) => animateIn(el, gap + (leaving.length ? 220 : 0) + Math.min(i, 12) * 35));   // kaskada przy doładowaniu
   updateEtas(now);
   updatePositions();
   updatePlots();
@@ -1621,12 +1671,15 @@ async function loadTLE(force) {
   let text = (!force && cached && age < TLE_MAX_AGE) ? cached : null;
   if (!text) {
     $('tleinfo').textContent = T('tleLoading');
+    tleLoading = true;
+    if (locator && !satrecs.length) draw();      // pokaż „pobieram…” zamiast „brak danych”
     try { text = await fetchTLE(); $('tlefail').hidden = true; }
     catch (e) {
       text = cached;   // użyj starych danych, jeśli są
       $('tlefail').hidden = false;
     }
   }
+  tleLoading = false;
   tleDB = text ? parseTLE(text) : {};
   calculate();
 }
@@ -1655,6 +1708,50 @@ function setTheme(th) {
   sysDark.addEventListener('change', syncThemeUI);
 })();
 
+// ---------- cytaty na ekranie powitalnym (płynna rotacja) ----------
+// „|” = miejsce złamania linii (jak w projekcie); autor zawsze w jednym kawałku
+const QUOTES = [
+  { en: 'The sky is very dark; the Earth is|bluish.', who: 'Yuri Gagarin' },
+  { en: 'We choose to go to the Moon.', who: 'John F. Kennedy', br: true },
+  { en: 'The Eagle has landed.', who: 'Neil Armstrong', br: true },
+  { en: 'Houston, we’ve had a problem|here.', who: 'Jack Swigert' },
+  { en: 'After all, it’s a radio station,|not a tank.', pl: 'A przecież to radiostacja,|nie czołg.', who: 'Antoni Zębik SP7LA' },
+  { en: 'Have I done the world good, or|have I added a menace?', who: 'Marconi' },
+];
+let qIdx = Math.floor(Math.random() * QUOTES.length), qTimer = 0, qBusy = false;
+const quoteHTML = q => `<span class="wq-q">${esc((lang === 'pl' && q.pl) || q.en).replace('|', '<br>')}</span> –${q.br ? '<br>' : ' '}<cite>${esc(q.who)}</cite>`;
+// stała wysokość pola cytatu = najdłuższy cytat przy tej szerokości i języku, żeby nic pod nim nie „skakało”
+function sizeQuote() {
+  const box = $('wQuote'), bq = box.querySelector('blockquote');
+  const probe = bq.cloneNode(); probe.style.cssText = 'position:absolute;visibility:hidden;left:0;right:0;top:0';
+  box.appendChild(probe);
+  let h = 0;
+  for (const q of QUOTES) { probe.innerHTML = quoteHTML(q); h = Math.max(h, probe.getBoundingClientRect().height); }
+  probe.remove();
+  box.style.minHeight = `${Math.ceil(h)}px`;
+}
+function showQuote(animate) {
+  const bq = $('wQuote').querySelector('blockquote');
+  const html = quoteHTML(QUOTES[qIdx]);
+  if (!animate || reduceMotion()) { bq.innerHTML = html; return; }
+  qBusy = true;
+  // wyjście: lekko w górę, rozmycie i wygaszenie; wejście: od dołu, z rozmycia do ostrości
+  bq.animate([{ opacity: 1, transform: 'none', filter: 'blur(0)' }, { opacity: 0, transform: 'translateY(-8px)', filter: 'blur(3px)' }],
+             { duration: 550, easing: 'cubic-bezier(.4, 0, 1, 1)', fill: 'forwards' }).onfinish = () => {
+    bq.innerHTML = html;
+    bq.animate([{ opacity: 0, transform: 'translateY(8px)', filter: 'blur(3px)' }, { opacity: 1, transform: 'none', filter: 'blur(0)' }],
+               { duration: 750, easing: 'cubic-bezier(0, 0, .2, 1)', fill: 'forwards' }).onfinish = () => { qBusy = false; };
+  };
+}
+function startQuotes() {
+  sizeQuote(); showQuote(false);
+  clearInterval(qTimer);
+  qTimer = setInterval(() => {
+    if ($('welcome').hidden || document.hidden || qBusy) return;
+    qIdx = (qIdx + 1) % QUOTES.length; showQuote(true);
+  }, 7000);
+}
+
 // ---------- ekran powitalny / zmiana gridu ----------
 function setHint(txt, err) { const h = $('wHint'); h.textContent = txt; h.classList.toggle('err', !!err); }
 function openWelcome(fromHeader) {
@@ -1664,8 +1761,10 @@ function openWelcome(fromHeader) {
   setHint(T('wHint'));
   w.hidden = false;
   document.body.style.overflow = 'hidden';
+  startQuotes();
   if (!reduceMotion()) w.animate([{ opacity: 0 }, { opacity: 1 }], { duration: fromHeader ? 250 : 400, easing: 'ease-out' });
-  if (fromHeader || !isNarrow()) setTimeout(() => { inp.focus(); inp.select(); }, 60);
+  // pole aktywne od razu tylko z myszką i klawiaturą; na telefonie nie, żeby klawiatura nie zasłaniała ekranu
+  if (!isNarrow() && matchMedia('(pointer: fine)').matches) setTimeout(() => { inp.focus(); inp.select(); }, 60);
 }
 function closeWelcome() {
   const w = $('welcome');
@@ -1808,6 +1907,7 @@ function setupWelcome() {
   $('tlefile').addEventListener('change', onTleFile);
   $('tlefile2').addEventListener('change', onTleFile);
   matchMedia('(max-width: 720px)').addEventListener('change', () => draw());
+  window.addEventListener('resize', () => { if (!$('welcome').hidden) sizeQuote(); });
 
   loadTLE(false);
   setInterval(() => {
