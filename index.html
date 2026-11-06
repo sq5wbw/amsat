@@ -237,7 +237,8 @@
   dl.freq dt { color: var(--muted); font-size: 13px; padding-top: 1px; }
   dl.freq dd { margin: 0; }
   dl.freq dd.note { color: var(--muted); }
-  .start .tarr { color: var(--muted); margin-right: .15em; font-weight: 400; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }   /* ten sam krój co strzałki → w azymutach (systemowy) */
+  .start .tarr { color: var(--muted); margin-right: calc(.15em - 2.5px); font-weight: 400; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }   /* ten sam krój co strzałki → w azymutach (systemowy) */
+  .livepos .earr.vert { margin-right: calc(.15em - 2px); }   /* ↑/↓ mają węższy znak – ten sam odstęp optyczny co → / ← */
   .livepos .earr { margin-right: .15em; font-weight: 400; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }   /* test: strzałki jak w linijce pod spodem */   /* ten sam odstęp strzałka → liczba co przy godzinie */
   /* azymut: → rośnie (obracaj się w prawo), ← maleje (w lewo); obrócona strzałka ↑, żeby krój był identyczny */
   .livepos .aarr { display: inline-block; }
@@ -352,7 +353,7 @@
     .theme-m { display: inline-flex; margin-left: -6px; }
     .lang-foot { display: inline-flex; margin-right: -6px; }
     .det-grid figure.plot { order: -1; }
-    svg.polar { max-width: none; width: calc(100% - 16px); margin: 6px auto 0; }
+    svg.polar { max-width: none; width: calc(100% - 16px); margin: 8px auto 0; }   /* odstęp do „N” u góry = odstęp do „W”/„E” po bokach */
     svg.polar text { font-size: 9.5px; }
     svg.polar .card { font-size: 12px; }
     .times { gap: 4px 22px; }
@@ -1504,7 +1505,7 @@ function updatePositions() {
       const b = r && lookAngles(r.satrec, new Date(now + 10000));
       if (a && b && a.el >= 0) {
         const daz = ((b.az - a.az + 540) % 360) - 180;   // poprawnie także przy przejściu 359° → 0°
-        txt = `el <span class="earr">${b.el > a.el ? '↑' : '↓'}</span>${Math.round(a.el)}°  az <span class="earr">${daz >= 0 ? '→' : '←'}</span>${Math.round(a.az)}°`;
+        txt = `el <span class="earr vert">${b.el > a.el ? '↑' : '↓'}</span>${Math.round(a.el)}°  az <span class="earr">${daz >= 0 ? '→' : '←'}</span>${Math.round(a.az)}°`;
       }   // strzałka tuż przy elewacji – wiadomo, czego dotyczy
     }
     if (txt) {
