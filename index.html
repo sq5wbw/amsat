@@ -404,7 +404,7 @@
   /* ---------- telefon ---------- */
   @media (max-width: 720px) {
     .wrap { padding: 18px 10px 40px; }
-    h1 { font-size: 22px; }
+    h1 { font-size: min(30px, calc((100vw - 160px) / 7.1)); white-space: nowrap; }   /* większe logo, zawsze mieści się obok pola Grid */
     /* nagłówek w dwóch liniach: nazwa | grid, filtry | kompas */
     header.top { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px 12px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
     header.top > .brand { display: contents; }
