@@ -427,8 +427,11 @@
     .row .mode { grid-area: mode; align-self: start; margin-top: 1px; }   /* wyrównanie do pierwszej linii nazwy, także gdy pod nią jest pozycja na żywo */
     .row .name { grid-area: name; }
     .row .eta  { grid-area: eta; }
-    .row .start, .row .dur, .row .el, .row .az { grid-area: info; }
-    .row .info { grid-area: info; display: flex; flex-wrap: nowrap; justify-content: space-between; gap: 6px; color: var(--muted); font-size: 13.5px; white-space: nowrap; }   /* zawsze jedna linia, rozłożona równo */   /* rozłożone równo od lewej do prawej */
+    /* (dawniej: wszystkie pola w obszarze info – teraz siatka kolumn wewnątrz .info) */
+    /* dolna linijka w stałych kolumnach: czas trwania i elewacja zaczynają się w tym samym miejscu w każdym wierszu, trasa azymutu do prawej */
+    .row .info { grid-area: info; display: grid; grid-template-columns: 25% 20.3% 1fr auto; align-items: baseline; color: var(--muted); font-size: 13.5px; white-space: nowrap; }
+    .row .info > * { text-align: left; justify-self: start; }
+    .row .info .az { justify-self: end; text-align: right; }
     .row .info .el b { font-weight: inherit; color: inherit; }
     .det-in { padding: 4px 12px 14px; }
     .tle { margin-top: 19.3px; }   /* odstęp tekst → linia TLE = odstęp godziny → „Downlink” (mierzony od liter) */
@@ -1329,7 +1332,8 @@ function rectGap(a, b) {
 }
 function setHidden(el, gap) {
   const hidden = el._hid ? gap <= SHOW : gap < HIDE;
-  if (hidden !== !!el._hid) { el._hid = hidden; el.style.opacity = hidden ? '0' : ''; }
+  // kierunki N/E/S/W nie znikają całkiem – tylko przygasają, żeby było jasne, że to celowe ustąpienie miejsca
+  if (hidden !== !!el._hid) { el._hid = hidden; el.style.opacity = hidden ? (el.classList.contains('card') ? '0.22' : '0') : ''; }
   return hidden;
 }
 function resolveCollisions(svg) {
