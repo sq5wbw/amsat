@@ -237,7 +237,7 @@
   dl.freq dt { color: var(--muted); font-size: 13px; padding-top: 1px; }
   dl.freq dd { margin: 0; }
   dl.freq dd.note { color: var(--muted); }
-  .start .tarr { color: var(--muted); margin-right: .3em; font-weight: 600; }   /* ↑ wschód (AOS) / ↓ zachód (LOS) */
+  .start .tarr { color: var(--muted); margin-right: .15em; font-weight: 600; }   /* ↑ wschód (AOS) / ↓ zachód (LOS) */
   .tle { margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 12.5px; }
   .tle a { color: var(--live); font-weight: 600; }
 
@@ -338,7 +338,7 @@
     .row .name { grid-area: name; }
     .row .eta  { grid-area: eta; }
     .row .start, .row .dur, .row .el, .row .az { grid-area: info; }
-    .row .info { grid-area: info; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 14px; color: var(--muted); font-size: 13.5px; }   /* rozłożone równo od lewej do prawej */
+    .row .info { grid-area: info; display: flex; flex-wrap: nowrap; justify-content: space-between; gap: 6px; color: var(--muted); font-size: 13.5px; white-space: nowrap; }   /* zawsze jedna linia, rozłożona równo */   /* rozłożone równo od lewej do prawej */
     .row .info .el b { font-weight: inherit; color: inherit; }
     .det-in { padding: 4px 12px 14px; }
     .tle { margin-top: 19.3px; }   /* odstęp tekst → linia TLE = odstęp godziny → „Downlink” (mierzony od liter) */
@@ -358,6 +358,7 @@
     /* strzałki AOS → Max → LOS na wysokości godzin, jak w linijce azymutów */
     .tarrow { display: block; padding-top: 18.75px; line-height: 27px; font-size: 16px; color: var(--muted); }
   }
+  @media (max-width: 350px) { .row .info { font-size: 12px; gap: 4px; } }   /* bardzo wąskie telefony: dolna linijka nadal w jednym wierszu */
   @media (min-width: 721px) {
     .row .info { display: contents; }
   }
