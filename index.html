@@ -161,8 +161,31 @@
   #minel.held::-moz-range-track, #minel:focus-visible::-moz-range-track { height: 8px; }
   #minel.held::-webkit-slider-thumb, #minel:focus-visible::-webkit-slider-thumb { margin-top: -9px; }
   /* „pokaż kolejne” pod listą */
-  .more { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: 18px; }
-  .morebtn { border: 1px solid var(--live); background: var(--live); border-radius: 4px; padding: 8px 18px; cursor: pointer; color: #fff; font-weight: 650; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; transition: background-color .15s ease, border-color .15s ease; }
+  /* „pokaż kolejne” jak „czytaj dalej”: kolejny przelot widać tuż pod listą, wygaszony gradientem do tła,
+     a przycisk (jak na ekranie startowym) leży na tym wygaszeniu i co kilka sekund delikatnie zjeżdża w dół */
+  /* --shift: jedna animowana wartość dla przycisku i gradientu – gradient „jedzie” za przyciskiem i odsłania więcej */
+  @property --shift { syntax: '<length>'; inherits: true; initial-value: 0px; }
+  .more { position: relative; display: flex; flex-direction: column; align-items: center; padding-bottom: 26px; animation: peekshift 8s infinite; }
+  .peek { align-self: stretch; height: 76px; overflow: hidden; pointer-events: none; user-select: none;
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,.55) 0, rgba(0,0,0,.3) calc(var(--shift) + 4px), transparent calc(var(--shift) * 1.6 + 10px));
+            mask-image: linear-gradient(to bottom, rgba(0,0,0,.55) 0, rgba(0,0,0,.3) calc(var(--shift) + 4px), transparent calc(var(--shift) * 1.6 + 10px)); }
+  .peek .row { border-bottom: 0; }
+  .morebtn { position: relative; z-index: 1; width: 100%; max-width: 360px; margin-top: calc(var(--tagoff, 12px) - 76px); transform: translateY(var(--shift)); }   /* górna krawędź = górna krawędź etykiety (FM) ukrytego przelotu */
+  /* spokojny, „oddychający” ruch co 8 s: łagodne zejście, krótka pauza, wolniejszy powrót */
+  @keyframes peekshift {
+    0%, 68% { --shift: 0px; animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+    82% { --shift: 22px; animation-timing-function: linear; }
+    87% { --shift: 22px; animation-timing-function: cubic-bezier(.37, 0, .63, 1); }
+    100% { --shift: 0px; }
+  }
+  /* najechanie / zaznaczenie: zamiast zamrozić przycisk w połowie ruchu, płynnie wraca na miejsce i czeka */
+  .more.hold { animation: none; transition: --shift .45s cubic-bezier(.37, 0, .63, 1); }
+  /* odkrywanie kolejnego przelotu – na razie wyłączone (wygląd przycisku zostaje) */
+  .more { animation: none !important; padding-bottom: 0; }
+  .peek { display: none; }
+  .morebtn { margin-top: 18px; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .more { animation: none; } }
+  .morebtn { border: 1px solid var(--live); background: var(--live); border-radius: 4px; padding: 12px 16px; cursor: pointer; color: #fff; font-weight: 650; font-size: 13.5px; letter-spacing: .06em; text-transform: uppercase; transition: background-color .15s ease, border-color .15s ease; }
   /* licznik w przycisku: co kilka sekund „nalicza się” od 1 – każda cyfra wjeżdża z góry i wygasa w dół */
   .morebtn { display: inline-flex; align-items: center; justify-content: center; gap: .4em; line-height: 1.5; }
   .mb-label, .mb-unit { line-height: 1.5em; }
@@ -223,6 +246,12 @@
   .name .livepos.show { max-height: 1.6em; opacity: 1; transform: none; }
   @media (prefers-reduced-motion: reduce) { .name .livepos { transition: none; } }
   .eta.on { color: var(--live); font-weight: 650; }
+  /* odliczanie: ten sam krój co nazwa satelity, cyfry o stałej szerokości, dwukropek pulsuje co sekundę jak w zegarze */
+  .eta { font-weight: 650; font-variant-numeric: tabular-nums; display: inline-block; }
+  /* jak w zegarku LCD: pół sekundy widoczny, pół sekundy schowany – z krótkim (0,1 s) przejściem zamiast ostrego cięcia */
+  .eta .ec { display: inline-block; animation: colonblink 1s linear infinite; }
+  @keyframes colonblink { 0%, 45% { opacity: 1; } 50%, 95% { opacity: 0; } 100% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .eta .ec { animation: none; } }
   .el b { font-weight: 650; }
   .az { color: var(--muted); white-space: nowrap; }
   .lbl { display: none; }
@@ -379,13 +408,13 @@
     /* nagłówek w dwóch liniach: nazwa | grid, filtry | kompas */
     header.top { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px 12px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
     header.top > .brand { display: contents; }
-    .list { margin-top: 14px; }   /* ten sam odstęp nad i pod linią nagłówka */
+    .list { margin-top: 0; }   /* lista zaczyna się tuż pod linią nagłówka */
     header.top h1 { grid-column: 1; }
     header.top .where { grid-column: 2; margin: 0; white-space: nowrap; }
     .controls { grid-column: 1 / -1; width: 100%; }
     .elrow { order: 3; width: 100%; }          /* telefon: suwak na całą szerokość, pod filtrami */
     #minel { flex: 1; width: auto; }
-    .morebtn { width: 100%; padding: 10px 16px; }
+    .morebtn { max-width: none; }
     #compasswrap { margin-left: auto; }
     .cols { display: none; }
     .row {
@@ -450,7 +479,7 @@
 </header>
 
 <main class="list" id="list"><p class="empty" data-i18n="computing"></p></main>
-<div class="more" id="more" hidden><button id="morebtn" class="morebtn"><span class="mb-label"></span><span class="mb-num num" aria-hidden="true"><span class="mb-d"><span>1</span></span><span class="mb-d"><span>0</span></span></span><span class="mb-unit"></span></button></div>
+<div class="more" id="more" hidden><div class="peek" id="peek" aria-hidden="true"></div><button id="morebtn" class="morebtn"><span class="mb-label"></span><span class="mb-num num" aria-hidden="true"><span class="mb-d"><span>1</span></span><span class="mb-d"><span>0</span></span></span><span class="mb-unit"></span></button></div>
 
 <footer class="data">
   <div id="tleinfo"></div>
@@ -750,7 +779,7 @@ const I18N = {
     noPerm: 'Brak zgody na dostęp do kompasu.', compassFail: 'Nie udało się włączyć kompasu.',
     noData: 'Telefon nie przesyła danych z kompasu. Sprawdź uprawnienia przeglądarki do czujników ruchu.',
     langGroup: 'Język', locale: 'pl-PL', toDark: 'Włącz tryb ciemny', toLight: 'Włącz tryb jasny',
-    wIntro: 'Przeloty satelitów krótkofalarskich<br>dla Twojej lokalizacji.', wLabel: 'Twój lokator (grid)', wHint: '4 lub 6 znaków, np. KO02 albo KO02OC', wGo: 'Pokaż przeloty', wGps: 'Użyj mojej lokalizacji (GPS)', wLocating: 'Ustalam lokalizację…', wFound: g => `Twoja lokalizacja: ${g}`, wDenied: 'Brak zgody na dostęp do lokalizacji. Wpisz lokator powyżej.', wNoGps: 'Ta przeglądarka nie udostępnia lokalizacji. Wpisz lokator powyżej.', wBad: 'To nie jest poprawny lokator. Wpisz 4 lub 6 znaków, np. KO02 albo KO02OC.', wClose: 'Zamknij',
+    wIntro: 'Przeloty satelitów krótkofalarskich<br>dla Twojej lokalizacji.', wLabel: 'Twój lokator (grid)', wHint: '4 lub 6 znaków, np. KO02 albo KO02OC', wGo: 'Pokaż przeloty', wGps: 'Użyj mojej lokalizacji (GPS)', wLocating: 'Ustalam lokalizację…', wFound: g => `Twoja lokalizacja: ${g}`, wDenied: 'Brak zgody na dostęp do lokalizacji. Wpisz lokator powyżej.', wNoGps: 'Ta przeglądarka nie udostępnia lokalizacji. Wpisz lokator powyżej.', wBad: 'To nie jest poprawny lokator. Wpisz 4 lub 6 znaków, np. KO02 albo KO02OC.', wClose: 'Zamknij', wNeed: 'Wpisz swój lokator albo użyj lokalizacji (GPS).',
     minEl: 'Min. el.', minElAria: 'Minimalna elewacja przelotu', showMore: n => `Pokaż kolejne ${n} ${plPasses(n)}`, showMoreLbl: 'Pokaż kolejne', passUnit: n => plPasses(n), shownOf: (a, b) => `${a} z ${b}`,
   },
   en: {
@@ -779,7 +808,7 @@ const I18N = {
     noPerm: 'Compass access was not allowed.', compassFail: 'Could not turn on the compass.',
     noData: 'The phone is not sending compass data. Check the browser’s motion sensor permissions.',
     langGroup: 'Language', locale: 'en-GB', toDark: 'Switch to dark mode', toLight: 'Switch to light mode',
-    wIntro: 'Amateur radio satellite passes<br>for your location.', wLabel: 'Your grid locator', wHint: '4 or 6 characters, e.g. KO02 or KO02OC', wGo: 'Show passes', wGps: 'Use my location (GPS)', wLocating: 'Getting your location…', wFound: g => `Your location: ${g}`, wDenied: 'Location access was not allowed. Enter your grid locator above.', wNoGps: 'This browser cannot share your location. Enter your grid locator above.', wBad: 'That is not a valid grid locator. Enter 4 or 6 characters, e.g. KO02 or KO02OC.', wClose: 'Close',
+    wIntro: 'Amateur radio satellite passes<br>for your location.', wLabel: 'Your grid locator', wHint: '4 or 6 characters, e.g. KO02 or KO02OC', wGo: 'Show passes', wGps: 'Use my location (GPS)', wLocating: 'Getting your location…', wFound: g => `Your location: ${g}`, wDenied: 'Location access was not allowed. Enter your grid locator above.', wNoGps: 'This browser cannot share your location. Enter your grid locator above.', wBad: 'That is not a valid grid locator. Enter 4 or 6 characters, e.g. KO02 or KO02OC.', wClose: 'Close', wNeed: 'Enter your grid locator or use your location (GPS).',
     minEl: 'Min. el.', minElAria: 'Minimum pass elevation', showMore: n => `Show next ${n} ${n === 1 ? 'pass' : 'passes'}`, showMoreLbl: 'Show next', passUnit: n => n === 1 ? 'pass' : 'passes', shownOf: (a, b) => `${a} of ${b}`,
   },
 };
@@ -840,6 +869,17 @@ function countdown(ms) {
   const m = Math.max(0, Math.floor(ms / 60000));
   return m < 60 ? `${m} ${T('min')}` : `${Math.floor(m / 60)} ${T('h')} ${pad2(m % 60)} ${T('min')}`;
 }
+// odliczanie bez „za”/„in”: 00:30 z pulsującym dwukropkiem, w ostatniej minucie same sekundy (bez „s”)
+function etaParts(ms) {
+  if (ms < 60000) return { s: String(Math.min(59, Math.max(1, Math.ceil(ms / 1000)))) };   // 59, 58 … 1
+  const m = Math.floor(ms / 60000);
+  return { h: pad2(Math.floor(m / 60)), m: pad2(m % 60) };
+}
+function etaHTML(ms) {
+  const e = etaParts(ms);
+  if (e.s) return `<span class="es">${e.s}</span>`;
+  return `<span class="eh">${e.h}</span><span class="ec" style="animation-delay:${-(Date.now() % 1000)}ms">:</span><span class="em">${e.m}</span>`;
+}
 function etaShort(ms) {
   if (ms < 60000) return `${Math.max(1, Math.ceil(ms / 1000))} s`;   // ostatnia minuta: odliczanie sekund
   const m = Math.floor(ms / 60000);
@@ -854,7 +894,7 @@ function rowHTML(p, now) {
     `<span class="info">` +
       `<span class="start num" title="${on ? T('set') : T('rise')}"><span class="tarr">${on ? '↓' : '↑'}</span>${hhmm(on ? p.end : p.start)}</span>` +
       `<span class="dur num r">${dur} ${T('min')}</span>` +
-      `<span class="eta num r${on ? ' on' : ''}" title="${on ? T('upNow') : T('toRise')}">${on ? T('now') : T('in') + ' ' + etaShort(p.start - now)}</span>` +
+      `<span class="eta r${on ? ' on' : ''}" title="${on ? T('upNow') : T('toRise') + ': ' + T('in') + ' ' + etaShort(p.start - now)}">${on ? T('now') : etaHTML(p.start - now)}</span>` +
       `<span class="el num r" title="${T('maxEl')}"><b>${p.elMax}°</b></span>` +
       `<span class="az num r" title="${T('azPath')}">${p.azRise}° → ${p.azPeak}° → ${p.azSet}°</span>` +
     `</span>`;
@@ -1458,7 +1498,7 @@ function draw() {
   const matching = satrecs.length ? passes.filter(p => filter[p.sat.mode] !== false && p.elMax >= minEl) : [];
   // liczone przy każdym rysowaniu, więc po zmianie szerokości okna lista sama się dopasowuje
   const shown = matching.slice(0, firstPage() + extraPages * pageStep());
-  updateMore(matching.length, shown.length);
+  updateMore(matching.length, shown.length, matching[shown.length]);
   if (!shown.length) {
     rowEls.clear();
     list.innerHTML = `<p class="empty${tleLoading && !satrecs.length ? ' loading' : ''}">${T(satrecs.length ? 'noPasses' : (tleLoading ? 'tleLoading' : 'noTLE'))}</p>`;
@@ -1498,7 +1538,7 @@ function draw() {
   const ids = new Set(idOf.values());
   const leaving = [];
   for (const [id, e] of rowEls) {
-    if (!ids.has(id)) { leaving.push(e.row, e.det); rowEls.delete(id); before.delete(e.row); before.delete(e.det); }
+    if (!ids.has(id)) { leaving.push(e.row, e.det); rowEls.delete(id); before.delete(e.row); before.delete(e.det); openRows.delete(id); }   // po powrocie (np. filtr) wiersz wraca zwinięty
   }
   if (leaving.length) animateOut(leaving);
 
@@ -1529,7 +1569,9 @@ function draw() {
   // kolejność: najpierw znikające wygasają, potem reszta przesuwa się na nowe miejsca, na końcu pojawiają się nowe
   const gap = leaving.length ? 140 : 0;
   flipFrom(before, gap);
-  entered.forEach((el, i) => animateIn(el, gap + (leaving.length ? 220 : 0) + Math.min(i, 12) * 35));   // kaskada przy doładowaniu
+  // nowe wiersze pojawiają się dopiero, gdy pozostałe zrobiły już dla nich miejsce – nic na siebie nie nachodzi
+  const moved = [...before.keys()].some(el => el.isConnected);
+  entered.forEach((el, i) => animateIn(el, gap + (moved ? 300 : 0) + Math.min(i, 12) * 35));
   updateEtas(now);
   updatePositions();
   updatePlots();
@@ -1562,10 +1604,26 @@ function countUp() {
   }, (k - 1) * STEP);
 }
 
-function updateMore(total, visible) {
+const PEEK_ON = false;   // odkrywanie kolejnego przelotu pod przyciskiem (wyłączone)
+function updateMore(total, visible, next) {
   const box = $('more');
   const left = total - visible;
   box.hidden = left <= 0;
+  // podgląd kolejnego przelotu pod przyciskiem
+  const peek = $('peek');
+  const key = next ? `${next.sat.name}|${next.start}|${lang}|${isNarrow()}|${Math.floor(Date.now() / 60000)}` : '';   // co minutę świeży czas
+  if (PEEK_ON && peek._key !== key) {
+    peek._key = key;
+    peek.innerHTML = '';
+    if (next) {
+      const r = document.createElement('div');
+      r.className = 'row';
+      r.innerHTML = rowHTML(next, Date.now());
+      peek.appendChild(r); placeEta(r);
+      // zmierz, gdzie zaczyna się etykieta trybu w ukrytym wierszu – przycisk stanie dokładnie na jej wysokości
+      requestAnimationFrame(() => { const tag = r.querySelector('.mode'); if (tag) box.style.setProperty('--tagoff', `${(tag.getBoundingClientRect().top - r.getBoundingClientRect().top).toFixed(2)}px`); });
+    }
+  }
   if (left > 0) {
     const n = Math.min(pageStep(), left), btn = $('morebtn');
     btn.querySelector('.mb-label').textContent = T('showMoreLbl');
@@ -1583,8 +1641,27 @@ function updateEtas(now) {
       continue;
     }
     const el = e.row.querySelector('.eta');
-    const txt = `${T('in')} ${etaShort(e.p.start - now)}`;
-    if (el && el.textContent !== txt) el.textContent = txt;
+    if (!el) continue;
+    const ms = e.p.start - now, parts = etaParts(ms);
+    const sec = !!parts.s, hasSec = !!el.querySelector('.es');
+    if (sec !== hasSec || (!sec && !el.querySelector('.eh'))) {   // zmiana trybu: 00:01 → 59 – krótkie, ledwo zauważalne przenikanie
+      if (el._switching) continue;
+      if (reduceMotion() || !el.firstChild) { el.innerHTML = etaHTML(ms); }
+      else {
+        el._switching = true;
+        el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, easing: 'ease-in', fill: 'forwards' }).onfinish = () => {
+          el.innerHTML = etaHTML(e.p.start - Date.now());
+          el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, easing: 'ease-out', fill: 'forwards' }).onfinish = () => { el._switching = false; };
+        };
+      }
+    }
+    else if (sec) { const s = el.querySelector('.es'); if (s.textContent !== parts.s) s.textContent = parts.s; }
+    else {                                                     // tylko cyfry – dwukropek pulsuje bez przerwy
+      const h = el.querySelector('.eh'), m = el.querySelector('.em');
+      if (h.textContent !== parts.h) h.textContent = parts.h;
+      if (m.textContent !== parts.m) m.textContent = parts.m;
+    }
+    el.title = `${T('toRise')}: ${T('in')} ${etaShort(ms)}`;
   }
 }
 function tick() {
@@ -1744,12 +1821,16 @@ function showQuote(animate) {
   };
 }
 function startQuotes() {
+  // przy każdym otwarciu losowy cytat (inny niż poprzednio pokazany)
+  let n = Math.floor(Math.random() * QUOTES.length);
+  if (n === qIdx) n = (n + 1 + Math.floor(Math.random() * (QUOTES.length - 1))) % QUOTES.length;
+  qIdx = n;
   sizeQuote(); showQuote(false);
   clearInterval(qTimer);
   qTimer = setInterval(() => {
     if ($('welcome').hidden || document.hidden || qBusy) return;
     qIdx = (qIdx + 1) % QUOTES.length; showQuote(true);
-  }, 7000);
+  }, 5000);   // co 5 s nowy cytat
 }
 
 // ---------- ekran powitalny / zmiana gridu ----------
@@ -1781,7 +1862,7 @@ function setupWelcome() {
   });
   const go = () => {
     const v = inp.value.trim().toUpperCase();
-    if (!gridToLatLon(v)) { setHint(T('wBad'), true); inp.focus(); return; }
+    if (!gridToLatLon(v)) { setHint(T(v ? 'wBad' : 'wNeed'), true); inp.focus(); return; }
     const changed = v !== locator;
     locator = v; store.set('locator', locator);
     compassCorr = declinationHere();
@@ -1791,8 +1872,10 @@ function setupWelcome() {
   };
   $('wGo').addEventListener('click', go);
   inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
-  $('wClose').addEventListener('click', () => { if (locator) closeWelcome(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && locator && !$('welcome').hidden) closeWelcome(); });
+  // zamknięcie (× lub Esc) tylko z poprawnym gridem w polu – bez gridu albo z błędnym ekran zostaje otwarty
+  const tryClose = () => { if (locator) go(); };
+  $('wClose').addEventListener('click', tryClose);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('welcome').hidden) tryClose(); });
   $('wGps').addEventListener('click', () => {
     if (!('geolocation' in navigator)) { setHint(T('wNoGps'), true); return; }
     const b = $('wGps'); b.disabled = true; setHint(T('wLocating'));
@@ -1865,6 +1948,24 @@ function setupWelcome() {
     elTimer = setTimeout(() => { store.set('min_el', String(minEl)); draw(); }, 140);   // lista reaguje płynnie, bez migotania przy przesuwaniu
   });
   $('morebtn').addEventListener('click', () => { extraPages++; draw(); });
+  // najechanie / zaznaczenie przycisku: zamiast zamrozić go w połowie ruchu, płynnie wraca na miejsce i czeka
+  {
+    const more = $('more');
+    const hold = () => {
+      if (more.classList.contains('hold')) return;
+      const cur = getComputedStyle(more).getPropertyValue('--shift');
+      more.style.setProperty('--shift', cur);
+      more.classList.add('hold');
+      void more.offsetWidth;
+      more.style.setProperty('--shift', '0px');
+    };
+    const release = () => {
+      if (more.matches(':hover') || more.contains(document.activeElement)) return;
+      more.classList.remove('hold'); more.style.removeProperty('--shift');
+    };
+    more.addEventListener('mouseenter', hold); more.addEventListener('focusin', hold);
+    more.addEventListener('mouseleave', release); more.addEventListener('focusout', () => setTimeout(release, 0));
+  }
   $('reload').addEventListener('click', () => loadTLE(true));
   $('dltle').addEventListener('click', async e => {
     // spróbuj zapisać plik na dysku; jeśli AMSAT zablokuje, otwórz go w nowej karcie
@@ -1919,7 +2020,6 @@ function setupWelcome() {
   setInterval(updatePositions, 3000);
   setInterval(updatePlots, 1000);
   setInterval(tick, 1000);
-  setInterval(countUp, 6000);   // co 6 s licznik w przycisku nalicza się od nowa
 })();
 </script>
 </body>
