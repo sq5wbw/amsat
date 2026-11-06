@@ -445,6 +445,8 @@
     .times { display: flex; justify-content: space-between; width: calc(100% + 1px); margin-right: -1px; }   /* -1px: korekta optyczna prawej krawędzi cyfr i liter */
     .times div:nth-of-type(2) { text-align: center; }
     .times div:nth-of-type(3) { text-align: right; }
+    /* trasa azymutu: strzałki tak blisko liczb jak w „az →321°” */
+    .row .az .parr { word-spacing: -1ch; margin: 0 1.75px 0 1px; }   /* odstęp od liter ok. 3,5 px z obu stron */
     /* strzałki AOS → Max → LOS na wysokości godzin, jak w linijce azymutów */
     .tarrow { display: block; padding-top: 18.75px; line-height: 27px; font-size: 16px; color: var(--muted); }
   }
@@ -896,7 +898,7 @@ function rowHTML(p, now) {
       `<span class="dur num r">${dur} ${T('min')}</span>` +
       `<span class="eta r${on ? ' on' : ''}" title="${on ? T('upNow') : T('toRise') + ': ' + T('in') + ' ' + etaShort(p.start - now)}">${on ? T('now') : etaHTML(p.start - now)}</span>` +
       `<span class="el num r" title="${T('maxEl')}"><b>${p.elMax}°</b></span>` +
-      `<span class="az num r" title="${T('azPath')}">${p.azRise}° → ${p.azPeak}° → ${p.azSet}°</span>` +
+      `<span class="az num r" title="${T('azPath')}">${p.azRise}°<span class="parr"> → </span>${p.azPeak}°<span class="parr"> → </span>${p.azSet}°</span>` +
     `</span>`;
 }
 
