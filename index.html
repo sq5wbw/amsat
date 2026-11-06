@@ -237,7 +237,8 @@
   dl.freq dt { color: var(--muted); font-size: 13px; padding-top: 1px; }
   dl.freq dd { margin: 0; }
   dl.freq dd.note { color: var(--muted); }
-  .start .tarr { color: var(--muted); margin-right: .15em; font-weight: 600; }   /* ↑ wschód (AOS) / ↓ zachód (LOS) */
+  .start .tarr { color: var(--muted); margin-right: .15em; font-weight: 600; }
+  .livepos .earr { margin-right: .15em; }   /* ten sam odstęp strzałka → liczba co przy godzinie */   /* ↑ wschód (AOS) / ↓ zachód (LOS) */
   .tle { margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 12.5px; }
   .tle a { color: var(--live); font-weight: 600; }
 
@@ -1497,10 +1498,10 @@ function updatePositions() {
       const r = satrecs.find(x => x.sat.name === el.dataset.sat);
       const a = r && lookAngles(r.satrec, new Date(now));
       const b = r && lookAngles(r.satrec, new Date(now + 10000));
-      if (a && b && a.el >= 0) txt = `${b.el > a.el ? '↑' : '↓'} el ${Math.round(a.el)}°  az ${Math.round(a.az)}°`;
+      if (a && b && a.el >= 0) txt = `el <span class="earr">${b.el > a.el ? '↑' : '↓'}</span>${Math.round(a.el)}°  az ${Math.round(a.az)}°`;   // strzałka tuż przy elewacji – wiadomo, czego dotyczy
     }
     if (txt) {
-      if (el.textContent !== txt) el.textContent = txt;
+      if (el._txt !== txt) { el.innerHTML = txt; el._txt = txt; }
       if (!el.classList.contains('show')) { void el.offsetHeight; el.classList.add('show'); }   // wjeżdża płynnie
     } else {
       el.classList.remove('show');            // tekst zostaje do końca wygaszania, więc nie „znika na sztywno”
