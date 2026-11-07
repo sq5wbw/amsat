@@ -306,7 +306,7 @@
   /* podpis w prawym górnym rogu wykresu („Rotation: 96°”) – pojawia się i znika płynnie */
   figure.plot { position: relative; }
   /* poziomica (przy włączonym Auto-rotate): szara podstawa + fioletowa kulka; w poziomie kulka zmienia się w pierścień */
-  figure.plot .level { position: absolute; top: 0; right: 0; width: 30px; height: 30px; overflow: visible; pointer-events: none; opacity: 0; transition: opacity .35s ease; }
+  figure.plot .level { position: absolute; top: var(--lv-top, 1px); right: 0; width: 30px; height: 30px; overflow: visible; pointer-events: none; opacity: 0; transition: opacity .35s ease; }
   figure.plot .level.on { opacity: 1; }
   .level .lv-base { fill: var(--rule); }
   .level .lv-ball { fill: var(--live); transition: fill-opacity .25s ease; }
@@ -449,7 +449,8 @@
     .row .info .az { justify-self: end; text-align: right; }
     .row .info .el b { font-weight: inherit; color: inherit; }
     .det-in { padding: 4px 12px 14px; }
-    .tle { margin-top: 19.3px; }   /* odstęp tekst → linia TLE = odstęp godziny → „Downlink” (mierzony od liter) */
+    .tle { margin-top: 19.3px; }
+    figure.plot .level { --lv-top: 8px; }   /* poziomica: odstęp od góry panelu = odstęp od prawej krawędzi */   /* odstęp tekst → linia TLE = odstęp godziny → „Downlink” (mierzony od liter) */
     .det-grid { grid-template-columns: 1fr; }
     .tools-top { display: none; }
     .theme-m { display: inline-flex; margin-left: -6px; }
@@ -1107,7 +1108,7 @@ let tiltB = null, tiltG = null, lvX = 0, lvY = 0;
 function updateLevel(dt) {
   const els = document.querySelectorAll('figure.plot .level');
   if (!els.length) return;
-  const show = tiltB !== null;   // poziomica działa na telefonie zawsze, gdy czujnik podaje przechylenie (niezależnie od Auto-rotate)
+  const show = compassOn && tiltB !== null;   // poziomica tylko przy włączonym Auto-rotate
   if (show) {
     const k = 1 - Math.exp(-dt / 90);
     const R = 6.5, clamp = v => Math.max(-1, Math.min(1, v));
