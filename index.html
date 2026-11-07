@@ -775,7 +775,7 @@ function buildPass(sat, satrec, start, end) {
 const plPasses = n => n === 1 ? 'przelot' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 'przeloty' : 'przelotów';
 const I18N = {
   pl: {
-    gridTitle: 'Zmień lokator', modes: 'Rodzaj emisji', compass: 'Auto°', compassAria: 'Auto-obrót wykresu według kompasu telefonu',
+    gridTitle: 'Zmień lokator', modes: 'Rodzaj emisji', compass: 'Rotate°', compassAria: 'Auto-obrót wykresu według kompasu telefonu',
     computing: 'Liczę przeloty…', reload: 'Odśwież dane TLE', download: 'Pobierz plik TLE', load: 'Wczytaj plik TLE',
     downloadTitle: 'Jeśli plik otworzy się w karcie: Ctrl+S (Cmd+S) albo prawy przycisk na linku → Zapisz link jako…',
     failHead: 'Nie udało się pobrać danych orbitalnych automatycznie.',
@@ -804,7 +804,7 @@ const I18N = {
     minEl: 'min el', minElAria: 'Minimalna elewacja przelotu', showMore: n => `Pokaż kolejne ${n} ${plPasses(n)}`, showMoreLbl: 'Pokaż kolejne', passUnit: n => plPasses(n), shownOf: (a, b) => `${a} z ${b}`,
   },
   en: {
-    gridTitle: 'Change grid locator', modes: 'Mode', compass: 'Auto°', compassAria: 'Auto-rotate the sky plot with the phone compass',
+    gridTitle: 'Change grid locator', modes: 'Mode', compass: 'Rotate°', compassAria: 'Auto-rotate the sky plot with the phone compass',
     computing: 'Calculating passes…', reload: 'Refresh TLE data', download: 'Download TLE file', load: 'Load TLE file',
     downloadTitle: 'If the file opens in a tab: Ctrl+S (Cmd+S), or right-click the link → Save link as…',
     failHead: 'Could not download orbital data automatically.',
