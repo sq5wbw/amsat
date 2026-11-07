@@ -1140,8 +1140,7 @@ function levelFrame(ts) {
   if (document.querySelector('.det.open figure.plot .level') && performance.now() - tiltSeen < 1500) levelRaf = requestAnimationFrame(levelFrame);
   else levelLast = 0;
 }
-// gałka N°: przy wyłączonym Auto-rotate obraca się jak igła kompasu (prosta krawędź wskazuje północ);
-// po włączeniu wraca do pozycji wyjściowej – wtedy północ pokazuje już obrócony wykres
+// gałka N°: zawsze obraca się jak igła kompasu – prosta krawędź połówki wskazuje północ
 let knobH = null, knobSx = 0, knobSy = 0, knobRaf = 0, knobLast = 0, knobSeen = 0;
 function setKnob(k, live) {
   const sw = document.getElementById('compass'); if (!sw) return;
@@ -1153,7 +1152,7 @@ function knobFrame(ts) {
   knobRaf = 0;
   const sw = document.getElementById('compass'); if (!sw) return;
   const dt = knobLast ? Math.min(100, ts - knobLast) : 16; knobLast = ts;
-  if (compassOn || knobH === null) { knobLast = 0; return; }
+  if (knobH === null) { knobLast = 0; return; }   // igła działa zawsze – przy włączonym i wyłączonym Auto-rotate
   const prev = sw._k || 0, target = -(knobH + declinationHere());
   const d = ((target - prev) % 360 + 540) % 360 - 180;
   setKnob(prev + d * (1 - Math.exp(-dt / 90)), true);
@@ -1167,7 +1166,7 @@ function onKnobHeading(h) {
   knobSy = knobSy * (1 - k) + Math.cos(h * Math.PI / 180) * k;
   knobH = norm(Math.atan2(knobSx, knobSy) * 180 / Math.PI);
   knobSeen = performance.now();
-  if (!compassOn && !knobRaf) knobRaf = requestAnimationFrame(knobFrame);
+  if (!knobRaf) knobRaf = requestAnimationFrame(knobFrame);
 }
 function onTiltGlobal(e) {
   if (e.type === 'deviceorientationabsolute' && e.alpha !== null) onKnobHeading(360 - e.alpha);
@@ -1372,7 +1371,6 @@ function setupCompass() {
       } catch (err) { alert(T('compassFail')); return; }
     }
     compassOn = true; heading = null; sx = sy = 0; compassCorr = declinationHere();
-    { const sw = document.getElementById('compass'); setKnob(Math.round((sw._k || 0) / 360) * 360, false); }
     start(); setBtn(); applyRot(); startCompassLoop();
     setTimeout(() => {
       if (compassOn && heading === null) alert(T('noData'));
