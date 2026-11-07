@@ -207,14 +207,16 @@
   /* przełącznik: stały rozmiar, gałka przesuwa się w prawo po włączeniu */
   .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
   .switch { position: relative; width: 44px; height: 26px; flex: none; padding: 0; border: 1px solid var(--rule); border-radius: 999px; background: var(--rule); cursor: pointer; transition: background-color .2s ease, border-color .2s ease; }
-  /* gałka przełącznika Rotate°: biała tarcza z wyciętą połówką (przez nią widać tło przełącznika);
-     przy włączonym kompasie obraca się razem z wykresem, czyli zgodnie z kompasem telefonu */
-  .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: var(--surface);
-    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 20 20%22%3E%3Cpath fill-rule=%22evenodd%22 d=%22M0 10a10 10 0 1 0 20 0a10 10 0 1 0-20 0ZM10 3a7 7 0 0 1 0 14Z%22/%3E%3C/svg%3E") center / 20px 20px no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 20 20%22%3E%3Cpath fill-rule=%22evenodd%22 d=%22M0 10a10 10 0 1 0 20 0a10 10 0 1 0-20 0ZM10 3a7 7 0 0 1 0 14Z%22/%3E%3C/svg%3E") center / 20px 20px no-repeat;
-    translate: 0 0; rotate: var(--krot, 0deg); transition: translate .2s cubic-bezier(.2, .7, .2, 1), rotate .45s cubic-bezier(.37, 0, .63, 1); }
+  /* gałka przełącznika N°: biała tarcza + szara połówka (zawsze szara, także po włączeniu);
+     przesuw i obrót mają ten sam czas i krzywą, więc połówka wraca do zera razem z ruchem gałki */
+  .switch::after, .switch::before { content: ""; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%;
+    translate: 0 0; rotate: var(--krot, 0deg); transition: translate .2s cubic-bezier(.2, .7, .2, 1), rotate .2s cubic-bezier(.2, .7, .2, 1); }
+  .switch::after { background: var(--surface); }
+  .switch::before { z-index: 1; background: var(--rule); -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 20 20%22%3E%3Cpath d=%22M10 3a7 7 0 0 1 0 14Z%22/%3E%3C/svg%3E") center / 20px 20px no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 20 20%22%3E%3Cpath d=%22M10 3a7 7 0 0 1 0 14Z%22/%3E%3C/svg%3E") center / 20px 20px no-repeat; }
   .switch[aria-checked="true"] { background: var(--live); border-color: var(--live); }
-  .switch[aria-checked="true"]::after { translate: 18px 0; transition: translate .2s cubic-bezier(.2, .7, .2, 1); }   /* obrót bez opóźnienia – podąża za kompasem w każdej klatce */
-  @media (prefers-reduced-motion: reduce) { .switch, .switch::after { transition: none; } }
+  .switch[aria-checked="true"]::after, .switch[aria-checked="true"]::before { translate: 18px 0; }
+  .switch.live::after, .switch.live::before { transition: translate .2s cubic-bezier(.2, .7, .2, 1); }   /* gałka jako igła kompasu: obrót bez opóźnienia, w każdej klatce */
+  @media (prefers-reduced-motion: reduce) { .switch, .switch::after, .switch::before { transition: none; } }
 
   /* ---------- lista przelotów ---------- */
   .list { margin-top: 18px; position: relative; }
@@ -500,7 +502,7 @@
       <input type="range" id="minel" min="0" max="45" step="1" value="0" data-i18n-aria="minElAria">
       <label for="minel" class="elval"><span data-i18n="minEl"></span> <b class="num" id="minelv">0°</b></label>
     </div>
-    <span id="compasswrap" class="tog" hidden data-i18n-title="compassAria"><label for="compass" class="sr-only" data-i18n="compass"></label><button class="switch" id="compass" role="switch" aria-checked="false" data-i18n-aria="compassAria"></button></span>
+    <span id="compasswrap" class="tog" hidden data-i18n-title="compassAria"><label for="compass" data-i18n="compass"></label><button class="switch" id="compass" role="switch" aria-checked="false" data-i18n-aria="compassAria"></button></span>
   </div>
 </header>
 
@@ -780,7 +782,7 @@ function buildPass(sat, satrec, start, end) {
 const plPasses = n => n === 1 ? 'przelot' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 'przeloty' : 'przelotów';
 const I18N = {
   pl: {
-    gridTitle: 'Zmień lokator', modes: 'Rodzaj emisji', compass: 'Rotate°', compassAria: 'Auto-obrót wykresu według kompasu telefonu',
+    gridTitle: 'Zmień lokator', modes: 'Rodzaj emisji', compass: 'N°', compassAria: 'Auto-obrót wykresu według kompasu telefonu',
     computing: 'Liczę przeloty…', reload: 'Odśwież dane TLE', download: 'Pobierz plik TLE', load: 'Wczytaj plik TLE',
     downloadTitle: 'Jeśli plik otworzy się w karcie: Ctrl+S (Cmd+S) albo prawy przycisk na linku → Zapisz link jako…',
     failHead: 'Nie udało się pobrać danych orbitalnych automatycznie.',
@@ -809,7 +811,7 @@ const I18N = {
     minEl: 'min el', minElAria: 'Minimalna elewacja przelotu', showMore: n => `Pokaż kolejne ${n} ${plPasses(n)}`, showMoreLbl: 'Pokaż kolejne', passUnit: n => plPasses(n), shownOf: (a, b) => `${a} z ${b}`,
   },
   en: {
-    gridTitle: 'Change grid locator', modes: 'Mode', compass: 'Rotate°', compassAria: 'Auto-rotate the sky plot with the phone compass',
+    gridTitle: 'Change grid locator', modes: 'Mode', compass: 'N°', compassAria: 'Auto-rotate the sky plot with the phone compass',
     computing: 'Calculating passes…', reload: 'Refresh TLE data', download: 'Download TLE file', load: 'Load TLE file',
     downloadTitle: 'If the file opens in a tab: Ctrl+S (Cmd+S), or right-click the link → Save link as…',
     failHead: 'Could not download orbital data automatically.',
@@ -1027,14 +1029,6 @@ function polarInner(p) {
 }
 // szybki obrót wszystkich wykresów: tylko atrybuty transform, bez przebudowy SVG (płynne 60 fps)
 function setPlotRotation() {
-  const sw = document.getElementById('compass');
-  if (sw) {   // kąt „rozwijany” (bez skoku 359° → 0°): gałka zawsze obraca się najkrótszą drogą
-    const prev = sw._k || 0;
-    const k = compassOn ? prev + (((plotRot - prev) % 360 + 540) % 360 - 180) : Math.round(prev / 360) * 360;
-    sw._k = k;
-    const kr = `${k.toFixed(2)}deg`;
-    if (sw.style.getPropertyValue('--krot') !== kr) sw.style.setProperty('--krot', kr);
-  }
   const a = plotRot.toFixed(2), m = (-plotRot).toFixed(2);
   for (const svg of document.querySelectorAll('svg.polar')) {
     if (!svg._g) { svg._g = [...svg.querySelectorAll('g.rot')]; svg._cr = [...svg.querySelectorAll('.cr')]; svg._nm = svg.querySelector('g.nm'); }
@@ -1146,7 +1140,38 @@ function levelFrame(ts) {
   if (document.querySelector('.det.open figure.plot .level') && performance.now() - tiltSeen < 1500) levelRaf = requestAnimationFrame(levelFrame);
   else levelLast = 0;
 }
+// gałka N°: przy wyłączonym Auto-rotate obraca się jak igła kompasu (prosta krawędź wskazuje północ);
+// po włączeniu wraca do pozycji wyjściowej – wtedy północ pokazuje już obrócony wykres
+let knobH = null, knobSx = 0, knobSy = 0, knobRaf = 0, knobLast = 0, knobSeen = 0;
+function setKnob(k, live) {
+  const sw = document.getElementById('compass'); if (!sw) return;
+  sw._k = k; sw.classList.toggle('live', live);
+  const kr = `${k.toFixed(2)}deg`;
+  if (sw.style.getPropertyValue('--krot') !== kr) sw.style.setProperty('--krot', kr);
+}
+function knobFrame(ts) {
+  knobRaf = 0;
+  const sw = document.getElementById('compass'); if (!sw) return;
+  const dt = knobLast ? Math.min(100, ts - knobLast) : 16; knobLast = ts;
+  if (compassOn || knobH === null) { knobLast = 0; return; }
+  const prev = sw._k || 0, target = -(knobH + declinationHere());
+  const d = ((target - prev) % 360 + 540) % 360 - 180;
+  setKnob(prev + d * (1 - Math.exp(-dt / 90)), true);
+  if (performance.now() - knobSeen < 1500) knobRaf = requestAnimationFrame(knobFrame); else knobLast = 0;
+}
+function onKnobHeading(h) {
+  const so = (screen.orientation && screen.orientation.angle) || window.orientation || 0;
+  h = norm(h + so);
+  const first = knobH === null, k = first ? 1 : 0.35;
+  knobSx = knobSx * (1 - k) + Math.sin(h * Math.PI / 180) * k;
+  knobSy = knobSy * (1 - k) + Math.cos(h * Math.PI / 180) * k;
+  knobH = norm(Math.atan2(knobSx, knobSy) * 180 / Math.PI);
+  knobSeen = performance.now();
+  if (!compassOn && !knobRaf) knobRaf = requestAnimationFrame(knobFrame);
+}
 function onTiltGlobal(e) {
+  if (e.type === 'deviceorientationabsolute' && e.alpha !== null) onKnobHeading(360 - e.alpha);
+  else if (typeof e.webkitCompassHeading === 'number') onKnobHeading(e.webkitCompassHeading);
   if (typeof e.beta !== 'number' || typeof e.gamma !== 'number') return;
   tiltB = e.beta; tiltG = e.gamma; tiltSeen = performance.now();
   if (!levelRaf && document.querySelector('.det.open figure.plot .level')) levelRaf = requestAnimationFrame(levelFrame);
@@ -1330,6 +1355,7 @@ function setupCompass() {
 
   turnCompassOff = (resetNorth = false) => {
     compassOn = false; heading = null; stop(); stopCompassLoop(); setBtn(); updateCaptions();
+    if (knobH !== null && !knobRaf) { knobSeen = performance.now(); knobRaf = requestAnimationFrame(knobFrame); }
     if (resetNorth) { manualRot = 0; store.set('plot_rot', '0'); }
     animateRotTo(manualRot);
   };
@@ -1346,6 +1372,7 @@ function setupCompass() {
       } catch (err) { alert(T('compassFail')); return; }
     }
     compassOn = true; heading = null; sx = sy = 0; compassCorr = declinationHere();
+    { const sw = document.getElementById('compass'); setKnob(Math.round((sw._k || 0) / 360) * 360, false); }
     start(); setBtn(); applyRot(); startCompassLoop();
     setTimeout(() => {
       if (compassOn && heading === null) alert(T('noData'));
