@@ -135,14 +135,14 @@
   header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px 24px; padding-bottom: 18px; }
   /* logo nie zaznacza się jak zwykły tekst (stuknięcie / przytrzymanie na telefonie) */
   /* logotyp (SVG od projektanta): kolory z motywu, wysokość w pełnych pikselach, szerokość z proporcji */
-  svg.logo { display: block; height: 24px; width: auto; overflow: visible; }
+  svg.logo { display: block; height: 30px; width: auto; overflow: visible; }   /* komputer: większe logo – na ekranach o zwykłej gęstości wektor wygląda ostrzej */
   svg.logo .lg-ink { fill: var(--ink); }
   svg.logo .lg-mark { fill: var(--live); }
   .w-logo svg.logo { height: round(down, calc(min(360px, 100vw - 40px) / 7.84), 1px); margin: 0 auto; }
   h1, .w-logo { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; cursor: default; }
   h1 .mark { color: var(--live); font-weight: 700; margin-left: -.04em; }
   h1 { margin: 0; font-size: 26px; line-height: 30px; font-weight: 650; letter-spacing: -0.01em; }
-  .where { margin: 6px 0 0; color: var(--muted); display: inline-flex; align-items: center; gap: 8px; }   /* ten sam odstęp co „Auto-rotate” → przełącznik */
+  .where { margin: 12px 0 0; color: var(--muted); display: inline-flex; align-items: center; gap: 8px; }   /* ten sam odstęp co „Auto-rotate” → przełącznik */
   .loc { border: 1px solid var(--rule); background: var(--surface); border-radius: 4px; padding: 1px 7px; cursor: pointer; color: var(--ink); font-weight: 600; }
   .loc { transition: border-color .15s ease; }
   .loc:hover { border-color: var(--muted); }
@@ -431,6 +431,8 @@
   @media (max-width: 720px) {
     .wrap { padding: 18px 10px 40px; }
     h1 { line-height: 0; }
+    .where { margin-top: 6px; }   /* telefon: bez zmian */
+    header.top h1, header.top .where { position: relative; top: -4px; }   /* logo + Grid 4 px wyżej, reszta nagłówka bez zmian */
     h1 svg.logo { height: round(down, min(24px, calc((100vw - 160px) / 7.84)), 1px); }   /* logo mieści się obok pola Grid */
     /* nagłówek w dwóch liniach: nazwa | grid, filtry | kompas */
     header.top { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px 12px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
