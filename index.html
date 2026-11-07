@@ -429,7 +429,12 @@
 
   /* ---------- telefon ---------- */
   @media (max-width: 720px) {
-    .wrap { padding: 18px 10px 40px; }
+    /* wariant B: wspólna linia treści 20 px od krawędzi (jak na ekranie startowym); tła wierszy i linie – na całą szerokość */
+    .wrap { padding: 23px 0 40px; }   /* logo 20 px od górnej krawędzi – jak górny pasek na ekranie startowym */
+    header.top { padding-left: 20px; padding-right: 20px; }
+    .more, footer.data { padding-left: 20px; padding-right: 20px; }
+    .list > .empty { padding-left: 20px; padding-right: 20px; }
+    .row.on::before { left: 8px; }   /* pasek postępu QRV odsunięty od krawędzi ekranu, 8 px przed etykietą */
     h1 { line-height: 0; }
     .where { margin-top: 6px; }   /* telefon: bez zmian */
     header.top h1, header.top .where { position: relative; top: -4px; }   /* logo + Grid 4 px wyżej, reszta nagłówka bez zmian */
@@ -452,7 +457,7 @@
       grid-template-areas:
         "mode name eta"
         "info info info";
-      row-gap: 2px; padding: 11px 12px 10px 12px;   /* jednakowy margines: lewo = prawo = góra (do etykiety) */
+      row-gap: 2px; padding: 11px 20px 10px 20px;   /* treść 20 px od krawędzi ekranu */
     }
     .row .mode { grid-area: mode; align-self: start; margin-top: 1px; }   /* wyrównanie do pierwszej linii nazwy, także gdy pod nią jest pozycja na żywo */
     .row .name { grid-area: name; }
@@ -463,15 +468,15 @@
     .row .info > * { text-align: left; justify-self: start; }
     .row .info .az { justify-self: end; text-align: right; }
     .row .info .el b { font-weight: inherit; color: inherit; }
-    .det-in { padding: 4px 12px 14px; }
+    .det-in { padding: 4px 20px 14px; }
     .tle { margin-top: 19px; }
-    figure.plot .level { --lv-top: 8px; }   /* poziomica: odstęp od góry panelu = odstęp od prawej krawędzi */   /* odstęp tekst → linia TLE = odstęp godziny → „Downlink” (mierzony od liter) */
+    figure.plot .level { --lv-top: 16px; }   /* poziomica: odstęp od góry panelu = odstęp od prawej krawędzi */   /* odstęp tekst → linia TLE = odstęp godziny → „Downlink” (mierzony od liter) */
     .det-grid { grid-template-columns: 1fr; }
     .tools-top { display: none; }
     .theme-m { display: inline-flex; margin-left: -6px; }
     .lang-foot { display: inline-flex; margin-right: -6px; }
     .det-grid figure.plot { order: -1; }
-    svg.polar { max-width: none; width: calc(100% - 16px); margin: 8px auto 0; }   /* odstęp do „N” u góry = odstęp do „W”/„E” po bokach */
+    svg.polar { max-width: none; width: 100%; margin: 8px auto 0; }   /* odstęp do „N” u góry = odstęp do „W”/„E” po bokach */
     svg.polar text { font-size: 9.5px; }
     svg.polar .card { font-size: 12px; }
     .times { gap: 4px 22px; }
