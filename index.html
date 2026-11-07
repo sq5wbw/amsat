@@ -118,7 +118,7 @@
   html, body { margin: 0; background: var(--paper); color: var(--ink); touch-action: manipulation; }
   button, a, label, input, .row, .seg, .switch, #minel { touch-action: manipulation; }   /* szybkie stuknięcia bez powiększania (kompas ma własne ustawienia) */
   body {
-    font: 15px/1.5 var(--sans);
+    font: 15px/22px var(--sans);
     font-variation-settings: "MONO" 0, "CASL" 0;
     padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
   }
@@ -136,7 +136,7 @@
   /* logo nie zaznacza się jak zwykły tekst (stuknięcie / przytrzymanie na telefonie) */
   h1, .w-logo { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; cursor: default; }
   h1 .mark { color: var(--live); font-weight: 700; margin-left: -.04em; }
-  h1 { margin: 0; font-size: 26px; line-height: 1.15; font-weight: 650; letter-spacing: -0.01em; }
+  h1 { margin: 0; font-size: 26px; line-height: 30px; font-weight: 650; letter-spacing: -0.01em; }
   .where { margin: 6px 0 0; color: var(--muted); display: inline-flex; align-items: center; gap: 8px; }   /* ten sam odstęp co „Auto-rotate” → przełącznik */
   .loc { border: 1px solid var(--rule); background: var(--surface); border-radius: 4px; padding: 1px 7px; cursor: pointer; color: var(--ink); font-weight: 600; }
   .loc { transition: border-color .15s ease; }
@@ -144,7 +144,7 @@
   .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
   /* suwak minimalnej elewacji: mocny fiolet do kropki, pastelowy dalej (jak pasek postępu przelotu) */
   .elrow { display: flex; align-items: center; gap: 12px; order: -1; }
-  .elval { color: var(--muted); font-size: 13px; white-space: nowrap; cursor: pointer; }
+  .elval { color: var(--muted); font-size: 13px; line-height: 20px; white-space: nowrap; cursor: pointer; }
   .elval b { color: var(--ink); font-weight: 650; display: inline-block; min-width: 3ch; text-align: right; }
   /* suwak bez gałki: sam pasek, który płynnie grubieje po najechaniu i podczas przeciągania */
   #minel { -webkit-appearance: none; appearance: none; width: 224px; height: 26px; margin: 0; background: transparent; cursor: pointer; touch-action: pan-y; --pct: 0%; }
@@ -189,20 +189,20 @@
   .peek { display: none; }
   .morebtn { margin-top: 18px; transform: none; }
   @media (prefers-reduced-motion: reduce) { .more { animation: none; } }
-  .morebtn { border: 1px solid var(--live); background: var(--live); border-radius: 4px; padding: 12px 16px; cursor: pointer; color: #fff; font-weight: 650; font-size: 13.5px; letter-spacing: .06em; text-transform: uppercase; transition: background-color .15s ease, border-color .15s ease; }
+  .morebtn { border: 1px solid var(--live); background: var(--live); border-radius: 4px; padding: 12px 16px; cursor: pointer; color: #fff; font-weight: 650; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; transition: background-color .15s ease, border-color .15s ease; }
   /* licznik w przycisku: co kilka sekund „nalicza się” od 1 – każda cyfra wjeżdża z góry i wygasa w dół */
-  .morebtn { display: inline-flex; align-items: center; justify-content: center; gap: .4em; line-height: 1.5; }
-  .mb-label, .mb-unit { line-height: 1.5em; }
-  .mb-num { display: inline-flex; letter-spacing: 0; line-height: 1.5em; }   /* ta sama wysokość linii co napis obok – cyfry stoją równo z literami */
-  .mb-d { position: relative; display: block; overflow: hidden; width: 1ch; height: 1.5em; line-height: 1.5em; }   /* jedno okienko na cyfrę, jak w liczniku mechanicznym */
+  .morebtn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; line-height: 20px; }
+  .mb-label, .mb-unit { line-height: 20px; }
+  .mb-num { display: inline-flex; letter-spacing: 0; line-height: 20px; }   /* ta sama wysokość linii co napis obok – cyfry stoją równo z literami */
+  .mb-d { position: relative; display: block; overflow: hidden; width: 1ch; height: 20px; line-height: 20px; }   /* jedno okienko na cyfrę, jak w liczniku mechanicznym */
   .mb-d > span { position: absolute; left: 0; top: 0; width: 1ch; text-align: center; }
   @media (hover: hover) { .morebtn:hover { background: color-mix(in srgb, var(--live) 85%, #000); border-color: color-mix(in srgb, var(--live) 85%, #000); } }
   .seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; background: var(--surface); }
-  .seg button { border: 0; background: none; padding: 6px 13px; cursor: pointer; color: var(--muted); font-weight: 600; font-size: 13px; }
+  .seg button { border: 0; background: none; padding: 6px 13px; cursor: pointer; color: var(--muted); font-weight: 600; font-size: 13px; line-height: 20px; }
   .seg button + button { border-left: 1px solid var(--rule); }
   .seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
   @media (hover: hover) { .seg button:hover:not([aria-pressed="true"]) { color: var(--ink); } }
-  .tog { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+  .tog { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; line-height: 20px; }
   .tog label { cursor: pointer; }
   /* przełącznik: stały rozmiar, gałka przesuwa się w prawo po włączeniu */
   .switch { position: relative; width: 44px; height: 26px; flex: none; padding: 0; border: 1px solid var(--rule); border-radius: 999px; background: var(--rule); cursor: pointer; transition: background-color .2s ease, border-color .2s ease; }
@@ -219,7 +219,7 @@
     column-gap: 14px; align-items: baseline;
     padding: 9px 12px;
   }
-  .cols { color: var(--muted); font-size: 12.5px; padding-top: 4px; padding-bottom: 6px; border-bottom: 1px solid var(--rule); }
+  .cols { color: var(--muted); font-size: 12px; line-height: 18px; padding-top: 4px; padding-bottom: 6px; border-bottom: 1px solid var(--rule); }
   .cols .r, .row .r { text-align: right; }
   .row { position: relative; cursor: pointer; border-bottom: 1px solid var(--rule); border-radius: 0; }
   /* hover jako nakładka z płynnym zanikaniem – działa też na pulsujących wierszach */
@@ -240,14 +240,14 @@
   .row.on::before { content: ""; z-index: 2; position: absolute; left: 0; top: 6px; bottom: 6px; width: 4px; border-radius: 999px;
     background: linear-gradient(to top, var(--live) calc(var(--left, 1) * 100%), var(--pastel) calc(var(--left, 1) * 100%)); }
   /* etykieta emisji: jasna dla nadchodzących przelotów, ciemna dla satelity nad horyzontem */
-  .mode { font-size: 11.5px; font-weight: 650; color: var(--muted); background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 0 5px; justify-self: start; line-height: 1.6;
+  .mode { font-size: 12px; font-weight: 650; color: var(--muted); background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; padding: 0 5px; justify-self: start; line-height: 18px;
           transition: color .5s ease, background-color .5s ease, border-color .5s ease; }
   .row.on .mode { color: var(--paper); background: var(--ink); border-color: var(--ink); }
   .name { font-weight: 650; }
   /* linijka „↓ el 8° az 285°”: płynnie się rozsuwa przy wschodzie i zwija przy zachodzie */
-  .name .livepos { display: block; overflow: hidden; max-height: 0; opacity: 0; transform: translateY(-3px); font-weight: 600; font-size: 12.5px; line-height: 1.5; color: var(--live);
+  .name .livepos { display: block; overflow: hidden; max-height: 0; opacity: 0; transform: translateY(-3px); font-weight: 600; font-size: 13px; line-height: 18px; color: var(--live);
     transition: max-height .45s cubic-bezier(.2, .7, .2, 1), opacity .35s ease, transform .45s cubic-bezier(.2, .7, .2, 1); }
-  .name .livepos.show { max-height: 1.6em; opacity: 1; transform: none; }
+  .name .livepos.show { max-height: 18px; opacity: 1; transform: none; }
   @media (prefers-reduced-motion: reduce) { .name .livepos { transition: none; } }
   .eta.on { color: var(--live); font-weight: 650; }
   /* odliczanie: ten sam krój co nazwa satelity, cyfry o stałej szerokości, dwukropek pulsuje co sekundę jak w zegarze */
@@ -283,22 +283,22 @@
   }
   .det-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 8px 32px; align-items: start; }
   .times { display: grid; grid-template-columns: repeat(3, max-content); gap: 4px 28px; margin: 6px 0 16px; }
-  .times div span { display: block; color: var(--muted); font-size: 12.5px; text-transform: uppercase; letter-spacing: .02em; }
-  .times div strong { font-size: 18px; font-weight: 600; }
-  .times div em { font-style: normal; color: var(--muted); font-size: 12.5px; margin-left: 6px; }
+  .times div span { display: block; color: var(--muted); font-size: 12px; line-height: 18px; text-transform: uppercase; letter-spacing: .02em; }
+  .times div strong { font-size: 18px; line-height: 27px; font-weight: 600; }
+  .times div em { font-style: normal; color: var(--muted); font-size: 12px; line-height: 18px; margin-left: 6px; }
   .tarrow { display: none; }
   dl.freq { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 5px 14px; margin: 0; }
-  dl.freq dt { color: var(--muted); font-size: 13px; padding-top: 1px; }
+  dl.freq dt { color: var(--muted); font-size: 13px; line-height: 20px; padding-top: 1px; }
   dl.freq dd { margin: 0; }
   dl.freq dd.note { color: var(--muted); }
-  .start .tarr { color: var(--muted); margin-right: calc(.15em - 2.5px); font-weight: 400; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }   /* ten sam krój co strzałki → w azymutach (systemowy) */
-  .livepos .earr.vert { margin-right: calc(.15em - 2px); }   /* ↑/↓ mają węższy znak – ten sam odstęp optyczny co → / ← */
-  .livepos .earr { margin-right: .15em; font-weight: 400; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }   /* test: strzałki jak w linijce pod spodem */   /* ten sam odstęp strzałka → liczba co przy godzinie */
+  .start .tarr { color: var(--muted); margin-right: 0; font-weight: 400; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }   /* ten sam krój co strzałki → w azymutach (systemowy) */
+  .livepos .earr.vert { margin-right: 0; }   /* ↑/↓ mają węższy znak – ten sam odstęp optyczny co → / ← */
+  .livepos .earr { margin-right: 2px; font-weight: 400; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }   /* test: strzałki jak w linijce pod spodem */   /* ten sam odstęp strzałka → liczba co przy godzinie */
   /* azymut: → rośnie (obracaj się w prawo), ← maleje (w lewo); obrócona strzałka ↑, żeby krój był identyczny */
   .livepos .aarr { display: inline-block; }
   .livepos .aarr.cw { transform: rotate(90deg); }
   .livepos .aarr.ccw { transform: translateX(.12em) rotate(-90deg); }   /* korekta optyczna: obrócony grot ląduje 1,5 px dalej w lewo */   /* ↑ wschód (AOS) / ↓ zachód (LOS) */
-  .tle { margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 12.5px; }
+  .tle { margin-top: 16px; padding-top: 10px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 12px; line-height: 18px; }
   .tle a { color: var(--live); font-weight: 600; }
 
   /* ---------- wykres nieba ---------- */
@@ -342,18 +342,18 @@
   svg.polar .info { fill: var(--ink); }
 
   /* ---------- stopka ---------- */
-  footer.data { margin-top: 28px; color: var(--muted); font-size: 13.5px; }
+  footer.data { margin-top: 28px; color: var(--muted); font-size: 14px; line-height: 20px; }
   .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
   /* przyciski stopki w stylu pola „Grid” */
-  .actions button, .actions a, .actions label.btn { display: inline-block; border: 1px solid var(--rule); background: var(--surface); border-radius: 4px; padding: 4px 10px; cursor: pointer; color: var(--ink); font-weight: 600; font-size: 13px; line-height: 1.4; text-decoration: none; transition: border-color .15s ease; }
+  .actions button, .actions a, .actions label.btn { display: inline-block; border: 1px solid var(--rule); background: var(--surface); border-radius: 4px; padding: 4px 10px; cursor: pointer; color: var(--ink); font-weight: 600; font-size: 13px; line-height: 18px; text-decoration: none; transition: border-color .15s ease; }
   .actions button:hover, .actions a:hover, .actions label.btn:hover { border-color: var(--muted); text-decoration: none; }
-  .linkbtn { background: none; border: 0; padding: 0; cursor: pointer; color: var(--ink); font-weight: 600; font-size: 13.5px; }
+  .linkbtn { background: none; border: 0; padding: 0; cursor: pointer; color: var(--ink); font-weight: 600; font-size: 14px; }
   .linkbtn:hover { text-decoration: underline; text-underline-offset: 2px; }
   .notice a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
   .copyrow { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-top: 28px; }
-  .copy { margin: 0; font-size: 11.5px; color: var(--muted); }
+  .copy { margin: 0; font-size: 12px; line-height: 16px; color: var(--muted); }
   /* przełącznik języka: sam tekst, aktywny język pogrubiony */
-  .lang { display: inline-flex; align-items: center; font-size: 12px; }
+  .lang { display: inline-flex; align-items: center; font-size: 12px; line-height: 18px; }
   .lang button { background: none; border: 0; padding: 2px 6px; cursor: pointer; color: var(--muted); font-weight: 500; letter-spacing: .02em; transition: color .15s ease; }
   .lang button + button { border-left: 1px solid var(--rule); }
   .lang button:hover { color: var(--ink); }
@@ -392,33 +392,33 @@
   .w-top { width: 100%; max-width: 360px; display: flex; justify-content: flex-end; align-items: center; gap: 6px; min-height: 34px; flex: none; }
   .w-top .w-close { order: -1; margin-right: auto; margin-left: -8px; }
   .w-card { width: 100%; max-width: 360px; margin: auto 0; padding: 28px 0; display: flex; flex-direction: column; align-items: stretch; }
-  .w-copy { flex: none; margin: 0; font-size: 11.5px; color: var(--muted); text-align: center; }
+  .w-copy { flex: none; margin: 0; font-size: 12px; line-height: 16px; color: var(--muted); text-align: center; }
   .w-close { width: 34px; height: 34px; border: 0; background: none; border-radius: 50%; font-size: 24px; line-height: 1; color: var(--muted); cursor: pointer; }
   @media (hover: hover) { .w-close:hover { color: var(--ink); background: var(--hover); } }
   .lang-w { display: inline-flex; margin-right: -6px; }
-  .w-logo { margin: 0; font-size: calc(min(360px, 100vw - 40px) / 7.14); line-height: 1.1; letter-spacing: -0.01em; text-align: center; white-space: nowrap; }   /* zawsze jedna linia – na wąskich ekranach logo się zmniejsza */
+  .w-logo { margin: 0; font-size: round(down, calc(min(360px, 100vw - 40px) / 7.14), 1px); line-height: round(calc(min(360px, 100vw - 40px) / 7.14 * 1.1), 1px); letter-spacing: -0.01em; text-align: center; white-space: nowrap; }   /* zawsze jedna linia – na wąskich ekranach logo się zmniejsza */
   /* cytat: kursywa Recursive, autor w kolorze akcentu; kolejne cytaty płynnie się zmieniają */
   .w-quote { margin: 26px 0 34px; text-align: center; position: relative; }
-  .w-quote blockquote { margin: 0; font-size: calc(min(360px, 100vw - 40px) / 17.78); line-height: 1.4;  color: var(--muted); font-variation-settings: "MONO" 0, "CASL" 0, "slnt" -15, "CRSV" 1; font-style: oblique 15deg; }
+  .w-quote blockquote { margin: 0; font-size: round(down, calc(min(360px, 100vw - 40px) / 17.78), 1px); line-height: round(calc(min(360px, 100vw - 40px) / 17.78 * 1.4), 1px);  color: var(--muted); font-variation-settings: "MONO" 0, "CASL" 0, "slnt" -15, "CRSV" 1; font-style: oblique 15deg; }
   .w-quote cite { font-style: normal; font-variation-settings: "MONO" 0, "CASL" 0, "slnt" 0; color: var(--live); white-space: nowrap; }
   .w-quote .wq-q { font-style: inherit; }
-  .w-label { color: var(--ink); font-weight: 600; font-size: 13.5px; margin-bottom: 12px; }   /* jak „Use my location (GPS)” */
-  .w-input { width: 100%; font: 600 32px/1.2 var(--sans); font-variation-settings: "MONO" 1; letter-spacing: .02em; text-align: center; text-transform: uppercase;
-    padding: 14px 12px; border: 1.5px solid var(--rule); border-radius: 8px; background: var(--surface); color: var(--ink); transition: border-color .2s ease; }
+  .w-label { color: var(--ink); font-weight: 600; font-size: 14px; line-height: 20px; margin-bottom: 12px; }   /* jak „Use my location (GPS)” */
+  .w-input { width: 100%; font: 600 32px/38px var(--sans); font-variation-settings: "MONO" 1; letter-spacing: .02em; text-align: center; text-transform: uppercase;
+    padding: 14px 12px; border: 1px solid var(--rule); border-radius: 8px; background: var(--surface); color: var(--ink); transition: border-color .2s ease; }
   .w-input::placeholder { color: var(--rule); }
   @media (hover: hover) { .w-input:hover { border-color: var(--muted); } }
-  .w-input:focus { outline: none; border-color: var(--live); }
-  .w-hint { margin: 12px 0 36px; min-height: 1.5em; font-size: 13px; color: var(--muted); text-align: center; }
+  .w-input:focus { outline: none; border-color: var(--live); box-shadow: 0 0 0 1px var(--live); }   /* 2 px wizualnie, bez zmiany układu */
+  .w-hint { margin: 12px 0 36px; min-height: 20px; font-size: 13px; line-height: 20px; color: var(--muted); text-align: center; }
   .w-hint.err { color: var(--live); }
-  .w-go { border: 1px solid var(--live); background: var(--live); color: #fff; border-radius: 4px; padding: 12px 16px; font-weight: 650; font-size: 13.5px; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
+  .w-go { border: 1px solid var(--live); background: var(--live); color: #fff; border-radius: 4px; padding: 12px 16px; font-weight: 650; font-size: 14px; line-height: 20px; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
   @media (hover: hover) { .w-go:hover { background: color-mix(in srgb, var(--live) 85%, #000); } }
-  .w-gps { margin-top: 28px; align-self: center; border: 0; background: none; padding: 6px; color: var(--ink); font-weight: 600; font-size: 13.5px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rule); cursor: pointer; }
+  .w-gps { margin-top: 28px; align-self: center; border: 0; background: none; padding: 6px; color: var(--ink); font-weight: 600; font-size: 14px; line-height: 20px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--rule); cursor: pointer; }
   .w-gps:disabled { color: var(--muted); cursor: default; }
 
   /* ---------- telefon ---------- */
   @media (max-width: 720px) {
     .wrap { padding: 18px 10px 40px; }
-    h1 { font-size: min(30px, calc((100vw - 160px) / 7.1)); white-space: nowrap; }   /* większe logo, zawsze mieści się obok pola Grid */
+    h1 { font-size: round(down, min(30px, calc((100vw - 160px) / 7.1)), 1px); line-height: 34px; white-space: nowrap; }   /* większe logo, zawsze mieści się obok pola Grid */
     /* nagłówek w dwóch liniach: nazwa | grid, filtry | kompas */
     header.top { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px 12px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
     header.top > .brand { display: contents; }
@@ -444,12 +444,12 @@
     .row .eta  { grid-area: eta; }
     /* (dawniej: wszystkie pola w obszarze info – teraz siatka kolumn wewnątrz .info) */
     /* dolna linijka w stałych kolumnach: czas trwania i elewacja zaczynają się w tym samym miejscu w każdym wierszu, trasa azymutu do prawej */
-    .row .info { grid-area: info; display: grid; grid-template-columns: 25% 20.3% 1fr auto; align-items: baseline; color: var(--muted); font-size: 13.5px; white-space: nowrap; }
+    .row .info { grid-area: info; display: grid; grid-template-columns: 25% 20.3% 1fr auto; align-items: baseline; color: var(--muted); font-size: 14px; line-height: 20px; white-space: nowrap; }
     .row .info > * { text-align: left; justify-self: start; }
     .row .info .az { justify-self: end; text-align: right; }
     .row .info .el b { font-weight: inherit; color: inherit; }
     .det-in { padding: 4px 12px 14px; }
-    .tle { margin-top: 19.3px; }
+    .tle { margin-top: 19px; }
     figure.plot .level { --lv-top: 8px; }   /* poziomica: odstęp od góry panelu = odstęp od prawej krawędzi */   /* odstęp tekst → linia TLE = odstęp godziny → „Downlink” (mierzony od liter) */
     .det-grid { grid-template-columns: 1fr; }
     .tools-top { display: none; }
@@ -465,14 +465,14 @@
     .times div:nth-of-type(2) { text-align: center; }
     .times div:nth-of-type(3) { text-align: right; }
     /* trasa azymutu: strzałki tak blisko liczb jak w „az →321°” */
-    .row .az .parr { word-spacing: -1ch; margin: 0 1.75px 0 1px; }   /* odstęp od liter ok. 3,5 px z obu stron */
+    .row .az .parr { word-spacing: -1ch; margin: 0 2px 0 1px; }   /* odstęp od liter ok. 3,5 px z obu stron */
     /* strzałki AOS → Max → LOS na wysokości godzin, jak w linijce azymutów */
-    .tarrow { display: block; padding-top: 18.75px; line-height: 27px; font-size: 16px; color: var(--muted); }
+    .tarrow { display: block; padding-top: 18px; line-height: 27px; font-size: 16px; color: var(--muted); }
   }
-  @media (max-width: 350px) { .row .info { font-size: 12px; gap: 4px; } }   /* bardzo wąskie telefony: dolna linijka nadal w jednym wierszu */
+  @media (max-width: 350px) { .row .info { font-size: 12px; line-height: 20px; } }   /* bardzo wąskie telefony: dolna linijka nadal w jednym wierszu */
   @media (min-width: 721px) {
     figure.plot { margin-top: 5px; }   /* komputer: równy odstęp nad „N” i pod „S” (do linii TLE) */
-    .tle { margin-top: 10.3px; }
+    .tle { margin-top: 10px; }
     .row .info { display: contents; }
   }
 </style>
@@ -866,6 +866,7 @@ function applyLang() {
   for (const el of document.querySelectorAll('[data-i18n-aria]')) el.setAttribute('aria-label', T(el.dataset.i18nAria));
   for (const b of document.querySelectorAll('.lang button')) b.setAttribute('aria-pressed', String(b.dataset.lang === lang));
   if (typeof showQuote === 'function' && document.getElementById('wQuote') && !document.getElementById('welcome').hidden) { sizeQuote(); showQuote(false); }
+  if (typeof snapStatic === 'function' && document.getElementById('loc')) requestAnimationFrame(snapStatic);
   const wh = document.getElementById('wHint'), wl = document.getElementById('welcome');
   if (wh && wl && !wl.hidden && !wh.classList.contains('err') && typeof setHint === 'function') setHint(T('wHint'));
   if (typeof syncThemeUI === 'function' && document.querySelector('.theme')) syncThemeUI();
@@ -910,7 +911,7 @@ function etaShort(ms) {
 function rowHTML(p, now) {
   const dur = Math.round((p.end - p.start) / 60000);
   const on = now >= p.start;
-  return `<span class="mode">${esc(p.sat.mode)}</span>` +
+  return `<span class="mode" data-m="${esc(p.sat.mode)}">${esc(p.sat.mode)}</span>` +
     `<span class="name">${esc(p.sat.name)}<span class="livepos num" data-sat="${esc(p.sat.name)}" data-start="${p.start}" data-end="${p.end}"></span></span>` +
     `<span class="info">` +
       `<span class="start num" title="${on ? T('set') : T('rise')}"><span class="tarr">${on ? '↓' : '↑'}</span>${hhmm(on ? p.end : p.start)}</span>` +
@@ -1419,7 +1420,15 @@ function scheduleCollisions() {
   collideRaf = requestAnimationFrame(() => { collideRaf = 0; document.querySelectorAll('svg.polar').forEach(resolveCollisions); });
 }
 // kółka na torze: zewnętrzna średnica (z konturem) = średnica kropki satelity
+// wykres: wysokość w pełnych pikselach (szerokość × proporcje dałyby ułamek, np. 318,34 px)
+function snapPlotHeight(svg) {
+  const vb = svg.viewBox.baseVal, w = svg.getBoundingClientRect().width;
+  if (!w || !vb.width) return;
+  const h = `${Math.round(w * vb.height / vb.width)}px`;
+  if (svg.style.height !== h) svg.style.height = h;
+}
 function sizeTicks(svg) {
+  snapPlotHeight(svg);
   const s = svg.getBoundingClientRect().width / svg.viewBox.baseVal.width;
   if (!s || svg._tickS === s) return;
   svg._tickS = s;
@@ -1801,6 +1810,7 @@ function setSatlistToggle() {
 
 function setLocatorUI() {
   $('loc').textContent = locator || '—';
+  snapBox($('loc'));
   for (const b of document.querySelectorAll('.flt')) b.setAttribute('aria-pressed', String(!!filter[b.dataset.m]));
 }
 
@@ -1905,6 +1915,7 @@ function openWelcome(fromHeader) {
   w.hidden = false;
   document.body.style.overflow = 'hidden';
   startQuotes();
+  requestAnimationFrame(() => { snapStatic(); snapWelcome(); });
   if (!reduceMotion()) w.animate([{ opacity: 0 }, { opacity: 1 }], { duration: fromHeader ? 250 : 400, easing: 'ease-out' });
   // pole aktywne od razu tylko z myszką i klawiaturą; na telefonie nie, żeby klawiatura nie zasłaniała ekranu
   if (!isNarrow() && matchMedia('(pointer: fine)').matches) setTimeout(() => { inp.focus(); inp.select(); }, 60);
@@ -1953,6 +1964,42 @@ function setupWelcome() {
   });
 }
 
+// ---------- pixel grid: elementy z obramowaniem mają całkowitą szerokość (tekst daje ułamki, np. 37,4 px),
+// a wyśrodkowane – parzystość dopasowaną do rodzica, więc krawędzie i linie wypadają dokładnie na pikselach ----------
+function snapBox(el, centered = false) {
+  if (!el || !el.isConnected) return;
+  el.style.width = '';
+  const w = el.getBoundingClientRect().width;
+  if (!w) return;
+  let iw = Math.ceil(w - 0.01);
+  if (centered && el.parentElement) {
+    const pw = Math.round(el.parentElement.getBoundingClientRect().width);
+    if ((pw - iw) % 2) iw += 1;
+  }
+  if (Math.abs(iw - w) > 0.01) el.style.width = `${iw}px`;
+}
+function snapWelcome() {
+  const w = $('welcome'); if (!w || w.hidden) return;
+  const card = w.querySelector('.w-card'), top = w.querySelector('.w-top');
+  card.style.marginTop = ''; card.style.marginBottom = '';
+  const mt = card.getBoundingClientRect().top - top.getBoundingClientRect().bottom;
+  if (Math.abs(mt - Math.round(mt)) > 0.01) { card.style.marginTop = `${Math.floor(mt)}px`; card.style.marginBottom = 'auto'; }
+  w.querySelectorAll('.w-gps').forEach(el => snapBox(el, true));
+}
+function snapStatic() {
+  document.querySelectorAll('.seg button, .lang button, .actions button, .actions a, .actions label.btn, .theme').forEach(el => snapBox(el));
+  document.querySelectorAll('.w-gps, .morebtn').forEach(el => snapBox(el, true));
+  snapBox($('loc'));
+  // etykiety FM/SSB/DIG: szerokość zmierzona raz na typ i zapisana w stylu (wiersze tworzą się na nowo co chwilę)
+  const probe = document.createElement('span'); probe.className = 'mode'; probe.style.cssText = 'position:absolute;visibility:hidden;left:-999px';
+  document.body.appendChild(probe);
+  let rules = '';
+  for (const m of ['FM', 'SSB', 'DIG']) { probe.textContent = m; rules += `.mode[data-m="${m}"]{width:${Math.ceil(probe.getBoundingClientRect().width - 0.01)}px;text-align:center}`; }
+  probe.remove();
+  let st = document.getElementById('snapcss'); if (!st) { st = document.createElement('style'); st.id = 'snapcss'; document.head.appendChild(st); }
+  st.textContent = rules;
+}
+
 (function init() {
   const savedLang = store.get('lang');
   lang = savedLang === 'pl' || savedLang === 'en' ? savedLang : 'en';   // domyślnie EN; wybór użytkownika jest zapamiętywany
@@ -1975,6 +2022,7 @@ function setupWelcome() {
 
   $('loc').addEventListener('click', () => openWelcome(true));
   setupWelcome();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(snapStatic); else snapStatic();
   if (!locator) openWelcome(false);   // pierwsze wejście: najpierw własny grid
 
   for (const b of document.querySelectorAll('.flt')) {
@@ -2070,7 +2118,7 @@ function setupWelcome() {
   $('tlefile').addEventListener('change', onTleFile);
   $('tlefile2').addEventListener('change', onTleFile);
   matchMedia('(max-width: 720px)').addEventListener('change', () => draw());
-  window.addEventListener('resize', () => { if (!$('welcome').hidden) sizeQuote(); });
+  window.addEventListener('resize', () => { if (!$('welcome').hidden) { sizeQuote(); snapWelcome(); } snapStatic(); });
 
   loadTLE(false);
   setInterval(() => {
