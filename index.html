@@ -305,6 +305,12 @@
   figure.plot { margin: 0; }
   /* podpis w prawym górnym rogu wykresu („Rotation: 96°”) – pojawia się i znika płynnie */
   figure.plot { position: relative; }
+  /* poziomica (przy włączonym Auto-rotate): szara podstawa + fioletowa kulka; w poziomie kulka zmienia się w pierścień */
+  figure.plot .level { position: absolute; top: 0; right: 0; width: 30px; height: 30px; overflow: visible; pointer-events: none; opacity: 0; transition: opacity .35s ease; }
+  figure.plot .level.on { opacity: 1; }
+  .level .lv-base { fill: var(--rule); }
+  .level .lv-ball { fill: var(--live); stroke: var(--live); stroke-width: 1.6; vector-effect: non-scaling-stroke; transition: fill-opacity .25s ease; }
+  .level.flat .lv-ball { fill-opacity: 0; }
   svg.polar { overflow: visible; width: 100%; max-width: 320px; height: auto; display: block; touch-action: pan-y pinch-zoom; user-select: none; -webkit-user-select: none; margin: 0 auto; }
   svg.polar .hit { cursor: grab; }   /* obracać można tylko tarczę, pole wokół przewija stronę */
   svg.polar.dragging, svg.polar.dragging .hit { cursor: grabbing; }
@@ -415,11 +421,12 @@
     .list { margin-top: 0; }   /* lista zaczyna się tuż pod linią nagłówka */
     header.top h1 { grid-column: 1; }
     header.top .where { grid-column: 2; margin: 0; white-space: nowrap; }
-    .controls { grid-column: 1 / -1; width: 100%; }
+    .controls { grid-column: 1 / -1; width: 100%; column-gap: 12px; }
     .elrow { order: 3; width: 100%; }          /* telefon: suwak na całą szerokość, pod filtrami */
     #minel { flex: 1; width: auto; }
     .morebtn { max-width: none; }
-    #compasswrap { margin-left: auto; }
+    #compasswrap { margin-left: auto; white-space: nowrap; }
+    @media (max-width: 350px) { #compasswrap { font-size: 12px; gap: 6px; } .controls { column-gap: 6px; } .seg button { padding: 6px 9px; } }
     .cols { display: none; }
     .row {
       grid-template-columns: auto 1fr auto;
@@ -472,7 +479,7 @@
   <div class="tools-top"><button class="theme theme-top" type="button"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><g class="ic-half"><circle cx="12" cy="12" r="7.5" fill="none" stroke="var(--ink)" stroke-width="1.5"/><path d="M12 4.5a7.5 7.5 0 0 0 0 15z" fill="var(--ink)"/></g></svg></button><div class="lang lang-top" role="group" data-i18n-aria="langGroup"><button data-lang="pl" lang="pl">PL</button><button data-lang="en" lang="en">EN</button></div></div>
   <div class="brand">
     <h1>SAT<span class="mark" aria-hidden="true">°</span> Predictor</h1>
-    <p class="where">Grid: <button class="loc mono" id="loc" data-i18n-title="gridTitle"></button></p>
+    <p class="where">Grid <button class="loc mono" id="loc" data-i18n-title="gridTitle"></button></p>
   </div>
   <div class="controls">
     <div class="seg" role="group" data-i18n-aria="modes">
@@ -763,7 +770,7 @@ function buildPass(sat, satrec, start, end) {
 const plPasses = n => n === 1 ? 'przelot' : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14)) ? 'przeloty' : 'przelotów';
 const I18N = {
   pl: {
-    gridTitle: 'Zmień lokator', modes: 'Rodzaj emisji', compass: 'Kompas:', compassAria: 'Kompas telefonu',
+    gridTitle: 'Zmień lokator', modes: 'Rodzaj emisji', compass: 'Auto-obrót', compassAria: 'Auto-obrót wykresu według kompasu telefonu',
     computing: 'Liczę przeloty…', reload: 'Odśwież dane TLE', download: 'Pobierz plik TLE', load: 'Wczytaj plik TLE',
     downloadTitle: 'Jeśli plik otworzy się w karcie: Ctrl+S (Cmd+S) albo prawy przycisk na linku → Zapisz link jako…',
     failHead: 'Nie udało się pobrać danych orbitalnych automatycznie.',
@@ -789,10 +796,10 @@ const I18N = {
     noData: 'Telefon nie przesyła danych z kompasu. Sprawdź uprawnienia przeglądarki do czujników ruchu.',
     langGroup: 'Język', locale: 'pl-PL', toDark: 'Włącz tryb ciemny', toLight: 'Włącz tryb jasny',
     wIntro: 'Przeloty satelitów krótkofalarskich<br>dla Twojej lokalizacji.', wLabel: 'Twój lokator (grid)', wHint: '4 lub 6 znaków, np. KO02 albo KO02OC', wGo: 'Pokaż przeloty', wGps: 'Użyj mojej lokalizacji (GPS)', wLocating: 'Ustalam lokalizację…', wFound: g => `Twoja lokalizacja: ${g}`, wDenied: 'Brak zgody na dostęp do lokalizacji. Wpisz lokator powyżej.', wNoGps: 'Ta przeglądarka nie udostępnia lokalizacji. Wpisz lokator powyżej.', wBad: 'To nie jest poprawny lokator. Wpisz 4 lub 6 znaków, np. KO02 albo KO02OC.', wClose: 'Zamknij', wNeed: 'Wpisz swój lokator albo użyj lokalizacji (GPS).',
-    minEl: 'Min. el.', minElAria: 'Minimalna elewacja przelotu', showMore: n => `Pokaż kolejne ${n} ${plPasses(n)}`, showMoreLbl: 'Pokaż kolejne', passUnit: n => plPasses(n), shownOf: (a, b) => `${a} z ${b}`,
+    minEl: 'min el', minElAria: 'Minimalna elewacja przelotu', showMore: n => `Pokaż kolejne ${n} ${plPasses(n)}`, showMoreLbl: 'Pokaż kolejne', passUnit: n => plPasses(n), shownOf: (a, b) => `${a} z ${b}`,
   },
   en: {
-    gridTitle: 'Change grid locator', modes: 'Mode', compass: 'Compass:', compassAria: 'Phone compass',
+    gridTitle: 'Change grid locator', modes: 'Mode', compass: 'Auto-rotate', compassAria: 'Auto-rotate the sky plot with the phone compass',
     computing: 'Calculating passes…', reload: 'Refresh TLE data', download: 'Download TLE file', load: 'Load TLE file',
     downloadTitle: 'If the file opens in a tab: Ctrl+S (Cmd+S), or right-click the link → Save link as…',
     failHead: 'Could not download orbital data automatically.',
@@ -818,7 +825,7 @@ const I18N = {
     noData: 'The phone is not sending compass data. Check the browser’s motion sensor permissions.',
     langGroup: 'Language', locale: 'en-GB', toDark: 'Switch to dark mode', toLight: 'Switch to light mode',
     wIntro: 'Amateur radio satellite passes<br>for your location.', wLabel: 'Your grid locator', wHint: '4 or 6 characters, e.g. KO02 or KO02OC', wGo: 'Show passes', wGps: 'Use my location (GPS)', wLocating: 'Getting your location…', wFound: g => `Your location: ${g}`, wDenied: 'Location access was not allowed. Enter your grid locator above.', wNoGps: 'This browser cannot share your location. Enter your grid locator above.', wBad: 'That is not a valid grid locator. Enter 4 or 6 characters, e.g. KO02 or KO02OC.', wClose: 'Close', wNeed: 'Enter your grid locator or use your location (GPS).',
-    minEl: 'Min. el.', minElAria: 'Minimum pass elevation', showMore: n => `Show next ${n} ${n === 1 ? 'pass' : 'passes'}`, showMoreLbl: 'Show next', passUnit: n => n === 1 ? 'pass' : 'passes', shownOf: (a, b) => `${a} of ${b}`,
+    minEl: 'min el', minElAria: 'Minimum pass elevation', showMore: n => `Show next ${n} ${n === 1 ? 'pass' : 'passes'}`, showMoreLbl: 'Show next', passUnit: n => n === 1 ? 'pass' : 'passes', shownOf: (a, b) => `${a} of ${b}`,
   },
 };
 // uwagi i opisy z listy satelitów po angielsku
@@ -932,7 +939,7 @@ function detailsHTML(p) {
       row(T('down'), TD(s.down), 'num') + row(T('up'), TD(s.up), 'num') + row(T('beacon'), TD(s.beacon), 'num') +
       row(T('type'), TD(s.type || s.mode)) + (s.note ? row(T('note'), TD(s.note), 'note') : '') +
     `</dl>` +
-    `</div><figure class="plot">${polarSVG(p)}</figure></div>` +
+    `</div><figure class="plot">${polarSVG(p)}<svg class="level" viewBox="-15 -15 30 30" aria-hidden="true"><circle class="lv-base" r="6.5"/><circle class="lv-ball" r="6.5"/></svg></figure></div>` +
     `<div class="tle">TLE: ${esc(r ? r.tleName || '-' : '-')}, <a href="https://www.n2yo.com/satellite/?s=${s.norad}#results" target="_blank" rel="noopener" title="${T('n2yo')}">NORAD ${s.norad}</a>, ${T('age')} ${age} d</div>`;
 }
 
@@ -1091,6 +1098,26 @@ function applyRot() {
 }
 // pętla animacji kompasu: wykres płynnie „dogania” odczyt magnetometru w każdej klatce
 let compassRaf = 0, compassLastT = 0, compassStartT = 0;
+// poziomica: przechylenie telefonu (beta – przód/tył, gamma – lewo/prawo), wygładzone
+let tiltB = null, tiltG = null, lvX = 0, lvY = 0;
+function updateLevel(dt) {
+  const els = document.querySelectorAll('figure.plot .level');
+  if (!els.length) return;
+  const show = compassOn && tiltB !== null;
+  if (show) {
+    const k = 1 - Math.exp(-dt / 90);
+    const R = 6.5, clamp = v => Math.max(-1, Math.min(1, v));
+    lvX += (clamp(tiltG / 20) * R - lvX) * k;      // kulka „toczy się” w stronę niższej krawędzi
+    lvY += (clamp(tiltB / 20) * R - lvY) * k;
+  }
+  const off = Math.hypot(lvX, lvY), lvl = off < 1.2;     // poziom: kulka nakrywa podstawę i zmienia się w pierścień
+  for (const svg of els) {
+    svg.classList.toggle('on', show);
+    const ball = svg.lastElementChild;
+    ball.setAttribute('cx', lvX.toFixed(2)); ball.setAttribute('cy', lvY.toFixed(2));
+    svg.classList.toggle('flat', lvl);
+  }
+}
 function compassFrame(ts) {
   compassRaf = 0;
   if (!compassOn) return;
@@ -1103,6 +1130,7 @@ function compassFrame(ts) {
     const next = Math.abs(d) < 0.02 ? target : norm(plotRot + d * k);
     if (next !== plotRot) { plotRot = next; setPlotRotation(); }
   }
+  updateLevel(compassLastT ? Math.min(100, ts - compassLastT) : 16);
   compassLastT = ts;
   compassRaf = requestAnimationFrame(compassFrame);
 }
@@ -1249,8 +1277,10 @@ function setupCompass() {
     heading = norm(Math.atan2(sx, sy) * 180 / Math.PI);
     if (first) updateCaptions();   // wykres dojedzie płynnie w pętli compassFrame
   };
-  const onAbs = e => { if (e.absolute !== false && e.alpha !== null) onHeading(360 - e.alpha); };
+  const onTilt = e => { if (typeof e.beta === 'number' && typeof e.gamma === 'number') { tiltB = e.beta; tiltG = e.gamma; } };
+  const onAbs = e => { onTilt(e); if (e.absolute !== false && e.alpha !== null) onHeading(360 - e.alpha); };
   const onIOS = e => {
+    onTilt(e);
     if (typeof e.webkitCompassHeading === 'number') onHeading(e.webkitCompassHeading);
     else if (e.absolute && e.alpha !== null) onHeading(360 - e.alpha);
   };
@@ -1264,7 +1294,7 @@ function setupCompass() {
   };
 
   turnCompassOff = (resetNorth = false) => {
-    compassOn = false; heading = null; stop(); stopCompassLoop(); setBtn(); updateCaptions();
+    compassOn = false; heading = null; tiltB = tiltG = null; stop(); stopCompassLoop(); setBtn(); updateCaptions(); updateLevel(16);
     if (resetNorth) { manualRot = 0; store.set('plot_rot', '0'); }
     animateRotTo(manualRot);
   };
